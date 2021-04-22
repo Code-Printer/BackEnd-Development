@@ -201,10 +201,10 @@ exception：异常对象
 (2) out.write()：输出字符串没有问题，但输出int型时会将int转换成char输出，导致输出的并非是想要的数字而是数字对应的ASCII码  
 结论：<font color=white size=3 face=“宋体”>JSP页面的代码脚本中任何要输出在浏览器的内容均使用out.print()方法</font>  
 ### JSP常用标签
-1、静态包含(对其他JSP文件的copy)  
+1、静态包含(对被包含的JSP文件进行copy，但不编译该文件)  
 格式：<%@include file=""%>   
 其中file属性设置要包含的JSP页面，以/打头，代表http://ip:port/工程路径/，对应web目录  
-2、使用的场景：
+(2)、使用的场景：
 
 ![result](https://static01.imgkr.com/temp/009f3836e2d24dc68009e31c1cb5040c.png)  
 代码演示：(1)：在web目录下创建body.jsp
@@ -222,6 +222,39 @@ exception：异常对象
 </body>
 ```
 运行结果：当访问body.jsp时，会按行输出头部信息、主体信息、页脚信息。原因在于在body.jsp中使用了静态包含，包含了foot.jsp，所以body.jsp会拷贝foot.jsp页面内容。  
-3、静态包含的特点：  
+(3)、静态包含的特点：  
 ①静态包含不会将被包含的JSP页面翻译成.java.class文件  
-②静态包含是把被包含的页面的代码拷贝到body.jsp对应的Java文件的对应位置执行。
+②静态包含是把被包含的页面的代码拷贝到body.jsp对应的Java文件的对应位置执行。  
+
+2、动态包含(对被包含的jsp页面进行编译并执行)  
+格式：<jsp:include page=””></jsp:include>  
+其中page属性设置要包含的JSP页面，与静态包含一致  
+(2)动态包含的特点：  
+①动态包含将被包含的JSP页面翻译成.java.class文件  
+②动态包含还可以传递参数  
+③动态包含底层使用如下代码调用被包含的JSP页面执行输出：
+org.apache.jasper.runtime.JspRuntimeLibrary.include(request, response, “/foot.jsp”, out, false);  
+代码演示：(1)：在web目录下创建body.jsp 
+```JSP
+<body>
+    头部信息 <br>
+    主体信息 <br>
+    <jsp:include page="/foot.jsp">
+        <jsp:param name="username" value="Jaychou"/>
+        <jsp:param name="password" value="root"/>
+    </jsp:include>
+</body>
+```
+(2)、在web目录下创建foot.jsp
+```JSP
+<body>
+    页脚信息 <br>
+    <%=request.getParameter("username")%>
+</body>
+```
+ 
+运行结果：按行输出头部信息、主体信息、页脚信息还有参数username的value值。    
+注意：设置请求参数的标签要写在body.jsp的动态包含之中  
+出现Expecting “jsp:param” standard action with “name” and “value” attributes异常，两个原因：  
+①动态包含中未设置参数但没有把<jsp:include page=””></jsp:include>放在一行上  
+②动态包含中加了注释 
