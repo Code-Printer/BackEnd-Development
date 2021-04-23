@@ -165,6 +165,52 @@ ServletContext接口的作用：
 ```
 注意：一个web工程只会创建一个ServletContext对象实例，换其他类输出servletContext得到的结果与上述相同，且一旦给此对象赋值(servletContext.setAttribute("key1","value1");)，即使换另一个类getAttribute(key1)，得到的结果也是value1。
 
+### ServletContextListener监听器
+1、Listener监听器介绍：  
+(1) Listener监听器是JavaWeb的三大组件之一   
+(2) Listener监听器是JavaEE的规范(接口)  
+(3) Listener监听器的作用是监听某件事物的变化，然后通过回调函数反馈给程序做一些处理。  
+
+2、ServletContextListener监听器  
+ServletContextListener监听器可以监听ServletContext对象的创建和销毁(web工程启动时创建，停止时销毁)，监听到创建和销毁之后都会调用ServletContextListener监听器的方法进行反馈：  
+```java
+public interface ServletContextListener extends EventListener {
+    //在ServletContext对象创建之后调用
+    public void contextInitialized(ServletContextEvent sce);
+    //在ServletContext对象销毁之后调用
+    public void contextDestroyed(ServletContextEvent sce);
+}
+```  
+3、ServletContextListener监听器的使用步骤：  
+(1) 编写一个类实现ServletContextListener接口  
+(2) 重写两个方法(监听初始化和监听销毁的方法)  
+(3) 在web.xml文件中配置监听器
+代码演示：  
+1、创建一个类监听器实现ServletContextListener接口并重写方法
+```java
+public class ListenerTest implements ServletContextListener {
+    @Override
+    public void contextInitialized(ServletContextEvent servletContextEvent) {
+        System.out.println("ServletContext对象创建");
+    }
+    @Override
+    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        System.out.println("ServletContext对象销毁");
+    }
+}
+```  
+2、在web.xml中配置该监听器
+```xml
+<listener>
+    <!-- <listener-class>标签中写上述程序的全类名 -->
+    <listener-class>com.qizegao.servlet.ListenerTest</listener-class>
+</listener>
+```
+结果：  
+Tomcat服务器启动之后控制台输出ServletContext对象创建  
+Tomcat服务器停止之后控制台输出ServletContext对象销毁  
+
+
 ## Http协议
 协议：表示双方或者多方协定好的规则，Http协议指的是客户端与服务器进行数据通信所要遵守的规则，Http协议中的数据又称作报文。
 ### 请求的Http协议格式
