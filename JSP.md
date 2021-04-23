@@ -13,6 +13,9 @@ JSP的作用主要是代替Servlet程序回传HTML页面的数据（后台服务
 ### JSP的本质
 JSP实质上是一个Servlet程序，当第一次访问JSP页面时，Tomcat会把JSP页面翻译成一个.java文件，然后编译生成.class文件。当打开.java文件会看到该类继承于一个HttpJspBase类，而该类继承自HttpServlet。
 
+查看翻译后的Java源文件的方法：启动Tomcat服务器访问到JSP页面之后在控制台输出的信息的前端找到Using CATALINA_BASE中的路径，在硬盘中打开此目录，点击work --> Catalina --> localhost，找到对应的工程文件夹寻找即可
+访问JSP页面其实是在执行对应的翻译后的Java代码的_jspService方法：翻译后的Java类中没有service方法，而是重写了父类的_jspService方法，这个方法会被父类的service方法调用
+
 ### JSP语法
 JSP头部的page指令：
 ```jsp
@@ -258,3 +261,48 @@ org.apache.jasper.runtime.JspRuntimeLibrary.include(request, response, “/foot.
 出现Expecting “jsp:param” standard action with “name” and “value” attributes异常，两个原因：  
 ①动态包含中未设置参数但没有把<jsp:include page=””></jsp:include>放在一行上  
 ②动态包含中加了注释 
+
+### ServletContextListener监听器
+1、Listener监听器介绍：  
+(1) Listener监听器是JavaWeb的三大组件之一   
+(2) Listener监听器是JavaEE的规范(接口)  
+(3) Listener监听器的作用是监听某件事物的变化，然后通过回调函数反馈给程序做一些处理。  
+
+2、ServletContextListener监听器  
+ServletContextListener监听器可以监听ServletContext对象的创建和销毁(web工程启动时创建，停止时销毁)，监听到创建和销毁之后都会调用ServletContextListener监听器的方法进行反馈：  
+```java
+public interface ServletContextListener extends EventListener {
+    //在ServletContext对象创建之后调用
+    public void contextInitialized(ServletContextEvent sce);
+    //在ServletContext对象销毁之后调用
+    public void contextDestroyed(ServletContextEvent sce);
+}
+```  
+3、ServletContextListener监听器的使用步骤：  
+(1) 编写一个类实现ServletContextListener接口  
+(2) 重写两个方法(监听初始化和监听销毁的方法)  
+(3) 在web.xml文件中配置监听器
+代码演示：  
+1、创建一个类监听器实现ServletContextListener接口并重写方法
+```java
+public class ListenerTest implements ServletContextListener {
+    @Override
+    public void contextInitialized(ServletContextEvent servletContextEvent) {
+        System.out.println("ServletContext对象创建");
+    }
+    @Override
+    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        System.out.println("ServletContext对象销毁");
+    }
+}
+```  
+2、在web.xml中配置该监听器
+```xml
+<listener>
+    <!-- <listener-class>标签中写上述程序的全类名 -->
+    <listener-class>com.qizegao.servlet.ListenerTest</listener-class>
+</listener>
+```
+结果：  
+Tomcat服务器启动之后控制台输出ServletContext对象创建  
+Tomcat服务器停止之后控制台输出ServletContext对象销毁  
