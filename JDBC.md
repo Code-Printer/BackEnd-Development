@@ -69,7 +69,106 @@ public static void main(String[] args) throws Exception {
     statement.close();
 }
 //运行成功后，mysql的customers表的id为8的行的name变成了xxx
-```    
+```   
+2、JDBC的初步使用2
+```java
+public static void main(String[] args) {
+	//为了保证流一定被关闭，不再抛出异常
+    Statement statement = null; //若在try中定义出了try无法使用，即无法关闭
+    Connection connection = null; //若在try中定义出了try无法使用，即无法关闭
+    try {
+        Class.forName("com.mysql.jdbc.Driver");
+        connection =
+                DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "root", "root");
+        statement = connection.createStatement();
+        String sql = "insert into user_table values('高奇泽','123','6523')";
+        int count = statement.executeUpdate(sql);
+        if (count > 0) {
+            System.out.println("执行成功");
+        } else {
+            System.out.println("执行失败");
+        }
+    } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+    } catch (SQLException throwables) {
+        throwables.printStackTrace();
+    } finally {
+        if (statement != null) { //不判断可能会空指针异常
+            try {
+                statement.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+        if (connection != null) { //不判断可能会空指针异常
+            try {
+                connection.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+    }
+}
+/*注：两个关闭流的操作不可写在一个try——catch中，否则第一个流关闭异常会导致第二个流关闭失败*/
+```  
+### ResultSet接口
+结果集对象(可认为是查询出的一张表)  
+有一个游标指向第一行的上一行，需要调用方法(boolean next方法)使游标下移，再调用方法(xxx getXxxx())获取指向行中某一列的值，注意：无法获取整行的值，只可以获取行中某一列的值。  
+![result](https://static01.imgkr.com/temp/b1807f70b8294f839abd5c19e128ffa9.png)  
+1、boolean next()游标向下移动一行，如果有下一行可以被指向，返回true，若无，返回false。  
+2、xxx getXxx(参数)获取当前行中由参数所指定列的值；注：Xxx代表数据类型。  
+参数：1、int：代表列的编号，从1开始  
+    2、String：代表列的名称。  
+java和sql中对应类型的转换：  
+![result](https://static01.imgkr.com/temp/da284c501d2a480d9a430a020d7e1d3e.png)  
+代码演示：使用ResultSet获取并遍历结果集  
+```java
+public static void main(String[] args) {
+    Connection connection = null;
+    Statement statement = null;
+    ResultSet resultSet = null;
+    try {
+        Class.forName("com.mysql.jdbc.Driver");
+        connection = 
+                DriverManager.getConnection("jdbc:mysql://localhost:3306/girls", "root", "root");
+        statement = connection.createStatement();
+        String sql = "select * from boys";
+        resultSet = statement.executeQuery(sql);
+        //循环的遍历结果集
+        while (resultSet.next()) {
+            int id = resultSet.getInt("id");
+            String string = resultSet.getString(2);
+            int userCP = resultSet.getInt("userCP");
+            System.out.println(id + string + userCP);
+        }
+    } catch (ClassNotFoundException | SQLException e) {
+        e.printStackTrace();
+    } finally {
+        if (resultSet != null) {
+            try {
+                resultSet.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+    }
+}
+
+```
 
 
 
