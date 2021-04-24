@@ -169,10 +169,229 @@ public static void main(String[] args) {
 }
 
 ```
+### 使用JDBCUtils工具
+目的：简化书写，将每次使用JDBC都要重复写的代码抽取出来(获取连接对象和关闭接口资源)，放在静态方法中，方便调用。  
+步骤:
+1.抽取注册驱动的代码  
+2.抽取一个方法获取连接对象  
+3.抽取一个方法释放资源  
+代码演示：使用JDBCUtils对Order表进行查询，结果放入集合中，并返回集合  
+1、创建一个Order类(存放的是查询的对象)  
+```java
+public class Order {
+    //一个类代表一张表，类中的属性代表一列，一个对象代表一行(ORM编程思想)
+    private int order_id; //对象的属性
+    private String order_name;
+    private Date order_date; //util下的Date
+    //定义所有属性的getter/setter方法
+    public int getOrder_id() {
+        return order_id;
+    }
+    public void setOrder_id(int order_id) {
+        this.order_id = order_id;
+    }
+    public String getOrder_name() {
+        return order_name;
+    }
+    public void setOrder_name(String order_name) {
+        this.order_name = order_name;
+    }
+    public Date getOrder_date() {
+        return order_date;
+    }
+    public void setOrder_date(Date order_date) {
+        this.order_date = order_date;
+    }
+    @Override
+    public String toString() {
+        return "Order{" +
+                "order_id=" + order_id +
+                ", order_name='" + order_name + '\'' +
+                ", order_date=" + order_date +
+                '}';
+    }
+}
+```  
+2、在src下创建一个配置文件jdbc.properties，只需去读这个文件，就可以知道数据库的相关信息，下次只需改这个文件就可以改变访问的数据表了  
+```properties
+driver=com.mysql.jdbc.Driver
+url=jdbc:mysql://localhost:3306/test
+user=root
+password=root //更改数据库或驱动只需更改配置文件即可，其余无需更改，体现可扩展性
+```  
+3.创建工具类JDBCUtils  
+```java
+public class JDBCUtils {
+    //1.注册驱动
+    private static String url;
+    private static String user;
+    private static String password;
+    private static String password;
+    private static String driver;
+    //静态代码块
+    static {
+        try {
+            //读取配置文件(都写在try中，一旦有一处出现异常其余没必要再执行)
+            Properties properties = new Properties();
+            properties.load(new FileReader("src/jdbc.properties")); //抛出异常
+            url = properties.getProperty("url");
+            user = properties.getProperty("user");
+            password = properties.getProperty("password");
+            driver = properties.getProperty("driver");
+            //注册驱动
+            Class.forName(driver);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    //2.获取连接(抛出异常)
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(url,user,password);
+    }
+    /*可直接类名.getConnection注册驱动，静态方法调动类加载，从而调动静态代码块*/
+    //3.关闭资源
+    //可能需要关闭ResultSet，也可能不需要，故需重载
+    public static void close(Statement stmt, Connection conn) {
+        if (stmt!=null){
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (conn!=null){
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public static void close(ResultSet rs, Statement stmt, Connection conn) {
+        if (rs!=null){
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (stmt!=null){
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (conn!=null){
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-
-
-
+}
+```
+4.编写测试类进行查询
+```java
+public class MyTest {
+    public List<Order> search() {
+        List<Order> list = null;
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = JDBCUtils.getConnection();
+            statement = connection.createStatement();
+            String sql = "select * from orders";
+            resultSet = statement.executeQuery(sql);
+            //创建Order类对象、集合
+            Order order = null;
+            list = new ArrayList<>();
+            //循环
+            while (resultSet.next()) {
+                int order_id = resultSet.getInt("order_id");
+                String order_name = resultSet.getString("order_name");
+                Date order_date = resultSet.getDate("order_date");
+	        //sql包的Date是Util包Date的子类，多态                
+	        //每次遍历一行需创建一个对象，保存一行的所有数据
+                order = new Order();
+                order.setOrder_date(order_date);/*使用set赋值，而不使用构造器赋值，因为可
+                order.setOrder_id(order_id);       能用户查询的列数并没有合适个数的构造器*/
+                order.setOrder_name(order_name);
+                //将order装入集合
+                list.add(order);
+                //继续下一次遍历
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } finally {
+            JDBCUtils.close(resultSet,statement,connection);
+        }
+        return list;
+    }
+    //执行
+    public static void main(String[] args) {
+        List<Order> listResult = new MyTest().search();
+        System.out.println(listResult);
+        System.out.println(listResult.size());
+    }
+}
+```  
+### PreparedStatement接口
+执行预编译SQL语句：参数使用?作为占位符，则上述练习的sql语句为：String sql="select * from user where username= ? and password = ?";  
+注意： 通过Connection获取PreparedStatement接口的方法为prepareStatement(String sql)；  
+使用步骤：
+获取PreparedStatement的对象之后，需要使用PreparedStatement接口的方法给?赋值：void setXxx(int p1，Xxx p2)；注：Xxx为该列属性的类型  
+p1：? 出现的位置，从1开始  
+p2：给 ? 赋予的值  
+使用PreparedStatement接口操作数据库的空参方法：
+(1) int executeUpdate(); (2) ResultSet executeQuery();  
+代码演示：使用PreparedStatement完成上述练习  
+```java
+public class MyTest {
+    //创建方法，根据是否可以登录成功返回boolean值
+    public boolean logIn(String userName, String passWord) {
+        if (userName == null || passWord == null) {
+            return false;
+        }
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        //获取连接，执行sql语句
+        try {
+            connection = JDBCUtils.getConnection();
+            String sql = "select * from user where name = ? and password = ?";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1,userName);
+            preparedStatement.setString(2,passWord);
+            resultSet = preparedStatement.executeQuery();
+            return resultSet.next();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } finally {
+            JDBCUtils.close(resultSet, preparedStatement,connection);
+            //preparedStatement使用了多态，传递给了父类
+        }
+        return false; //出现异常，则返回false
+    }
+    //测试
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("输入姓名：");
+        String name = scan.nextLine();
+        System.out.println("输入密码：");
+        String passWord = scan.nextLine();
+        boolean b = new MyTest().logIn(name, passWord);
+        if (b) {
+            System.out.println("可以成功登录！");
+        } else {
+            System.out.println("无法成功登录！");
+        }
+    }
+}
+```
 
 
 
