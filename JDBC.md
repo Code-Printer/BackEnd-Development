@@ -721,7 +721,7 @@ public static void main(String[] args) {
 回滚事务：执行sql语句时出现异常，在catch中回滚事务  
 获取事务的隔离级别：int getTransactionIsolation()；返回隔离级别对应的int值  
 设置事务的隔离级别：void setTransactionIsolation(int level)；  
-注：参数一般使用全局常量：Connection.  TRANSACTION_XXX   
+注：参数一般使用全局常量：Connection.TRANSACTION_XXX   
 代码演示：通过银行转账的例子
 ```java
 public static void main(String[] args) {
@@ -804,7 +804,7 @@ maxWait=3000
 程序中使用步骤：
 1、调用DataSource source=DruidDataSourceFactory.createDataSource(Properties pro);  
 2、调用Connection xxx = source.getConnection();获取连接(需要几个连接数就调用几次)   
-代码演示：代码演示13：演示Druid数据库连接池的使用  
+代码演示：演示Druid数据库连接池的使用  
 ```java
 Properties properties = new Properties();
 properties.load(new FileInputStream("druid.properties"));
