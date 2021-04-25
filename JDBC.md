@@ -626,5 +626,157 @@ try {
     }
 } /*执行完毕，当前moudle下会出现result.jpg，内容是表中id=19的photo列属性的值*/
 ```  
+代码演示：向goods表插入20000条数据，体会不同方式的差别  
+1、 使用statement插入2000条数据
+```java
+public static void main(String[] args) {
+    Connection connection = null;
+    Statement statement = null;
+    try {
+        connection = JDBCUtils.getConnection();
+        statement = connection.createStatement();
+        //使用for循环插入20000条数据
+        for (int i = 0; i < 20000; i++) {
+            String sql = "insert into goods(name) values('name_"+i+"')";
+            statement.executeUpdate(sql);
+            System.out.println("正在插入第" + (i + 1) +"条数据");
+        }
+    } catch (SQLException throwables) {
+        throwables.printStackTrace();
+    } finally {
+        JDBCUtils.close(statement, connection);
+    }
+}
+/*分析：每次插入都会创建一条sql语句，浪费空间，效率极低*/
+```
+2、使用PreparedStatement语句进行批量插入
+```java
+public static void main(String[] args) {
+    Connection connection = null;
+    PreparedStatement preparedStatement = null;
+    try {
+        connection = JDBCUtils.getConnection();
+        String sql = "insert into goods set name = ?";
+        preparedStatement = connection.prepareStatement(sql);
+        //使用循环给占位符赋值
+        for (int i = 0; i < 20000; i++) {
+            preparedStatement.setString(1, "name_" + i);
+            preparedStatement.executeUpdate();
+            System.out.println("正在插入第" + (i + 1) + "条数据");
+        }
+    } catch (SQLException throwables) {
+        throwables.printStackTrace();
+    } finally {
+        JDBCUtils.close(preparedStatement, connection);
+    }
+} /*分析：需要多次与数据库交互，效率较低*/
+//注意：DBServer会对预编译语句提供性能优化。因为预编译语句有可能被重复调用，所以语句在被DBServer的编译器编译后的执行代码被缓存下来，那么下次调用时只要是相同的预编译语句就不需要编译，只要将参数直接传入编译过的语句执行代码中就会得到执行。而在statement语句中，即使是相同操作但因为数据内容不一样(sql语句参数是拼接的，而非传入的)，所以整个语句本身不能匹配，没有缓存语句的意义。这样每执行一次都要对传入的语句编译一次。
+```   
+3、使用Statement语句中专门用来处理批量数据的方法
+介绍Statement中的几个方法：  
+addBatch(String sql):将给定的sql命令添加到此Statement对象的当前命令列表中，通过调用  executeBatch方法可以批量的执行此列表中的命令  
+executeBatch():将一批命令提交给数据库执行  
+clearBatch():清空此Statement对象的当前sql命令列表  
+注意：1. MySQL服务器默认是关闭批处理服务的(不支持Batch方法)，如果需要让MySQL开启批处理的支持，通过在url后面加 ?rewriteBatchedStatements=true.  
+2.需要使用的mysql 驱动：mysql-connector-java-5.1.37-bin.jar，5.1.7不支持.  
+代码演示:
+```java
+public static void main(String[] args) {
+    Connection connection = null;
+    PreparedStatement preparedStatement = null;
+    try {
+        connection = JDBCUtils.getConnection();
+        String sql = "insert into goods(name) values(?)";
+        preparedStatement = connection.prepareStatement(sql);
+        connection.setAutoCommit(false);//开启事务
+        for (int i = 1; i <= 2000000; i++) {
+            preparedStatement.setString(1, "name_" + i);
+            //PreparedStatement中的addBatch方法是空参的(预编译)
+            preparedStatement.addBatch();
+            if (i % 500 == 0) {
+                preparedStatement.executeBatch();
+                preparedStatement.clearBatch();
+            }
+        }
+        connection.commit();//提交事务
+    } catch (SQLException throwables) {
+        throwables.printStackTrace();
+    } finally {
+        try {
+            if (connection != null) {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } finally {
+            JDBCUtils.close(preparedStatement, connection);
+        }
+    }
+} /*分析：目前进行批量操作效率最高的方法*/
+```  
+### JDBC管理事务  
+使用Connection接口的方法来管理事务：  
+开启事务：在执行sql语句之前  
+提交事务：当所有sql语句都可顺利执行  
+回滚事务：执行sql语句时出现异常，在catch中回滚事务  
+获取事务的隔离级别：int getTransactionIsolation()；返回隔离级别对应的int值  
+设置事务的隔离级别：void setTransactionIsolation(int level)；  
+注：参数一般使用全局常量：Connection.  TRANSACTION_XXX   
+代码演示：通过银行转账的例子
+```java
+public static void main(String[] args) {
+    //在user_table表中，AA给BB转账500元
+    Connection connection = null;
+    PreparedStatement preparedStatement1 = null;
+    PreparedStatement preparedStatement2 = null;
+    try {
+        //获取连接
+        connection = JDBCUtils.getConnection();
+        //开启事务
+        connection.setAutoCommit(false);
+        //定义sql语句
+        String sql1 = "update user_table set balance = balance - ? where user = ?";
+        String sql2 = "update user_table set balance = balance + ? where user = ?";
+        //创建PreparedStatement的对象
+        preparedStatement1 = connection.prepareStatement(sql1);
+        preparedStatement2 = connection.prepareStatement(sql2);
+        //给?赋值
+        preparedStatement1.setDouble(1, 500);
+        preparedStatement1.setString(2, "AA");
+        preparedStatement2.setDouble(1, 500);
+        preparedStatement2.setString(2, "BB");
+        //执行sql语句
+        preparedStatement1.executeUpdate();
+        //手动的抛出异常，测试回滚事务，
+        int i= 3 / 0; //产生异常ArithmeticException，跳转到catch结构中
+        preparedStatement2.executeUpdate();
+        //如果顺利执行完两条sql语句，则提交事务
+        connection.commit();
+        System.out.println("事务提交成功！");
+    } catch (Exception e) { //保证出现任何异常都回滚，将异常类改为最大
+        if (connection != null) {
+            try {
+                connection.rollback(); //抛出异常
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+        e.printStackTrace();
+        System.out.println("事务回滚！");
+    } finally {
+        //未关闭连接时还可能执行其他的sql语句，故在执行close方法之前应当恢复自动提交功能
+        connection.setAutoCommit(true);
+        //两个PreparedStatement的对象均需关闭
+        JDBCUtils.close(preparedStatement1, connection);
+        if (preparedStatement2 != null) {
+            try {
+                preparedStatement2.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+    }
+}
+```
 
 
