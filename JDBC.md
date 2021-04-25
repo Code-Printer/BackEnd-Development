@@ -339,7 +339,13 @@ public class MyTest {
     }
 }
 ```  
-### PreparedStatement接口
+### PreparedStatement接口(防止数据库的注入问题)
+PreparedStatement的好处：(以后均使用此接口，弃用Statement)  
+1、解决sql的注入问题  
+2、可以操作Blob的数据(二进制的大型数据)
+void setBlob(int parameterIndex, InputStream inputStream)；
+3、可以实现更高效的批量操作  
+代码演示:上面已经演示过了防注入问题，下面是演示2和3的操作。 
 执行预编译SQL语句：参数使用?作为占位符，则上述练习的sql语句为：String sql="select * from user where username= ? and password = ?";  
 注意： 通过Connection获取PreparedStatement接口的方法为prepareStatement(String sql)；  
 使用步骤：
@@ -391,7 +397,234 @@ public class MyTest {
         }
     }
 }
-```
+```  
+### 结果集的元数据(ResultSetMetaData)  
+调用结果集ResultSet中的ResultSetMetaData getMetaData()方法，得到ResultSetMetaData的对象，通过ResultSetMetaData接口中的方法可获得结果集的元数据：  
+(1) int getColumnCount()；获取结果集中的列数。  
+(2) String getColumnLabel(int i)；获取查询结果表的列名，有别名，获取别名 ，无别名，获取列名。  
+(3) String getColumnName(int i)；仅可获取表的列名，无法获取别名(使用较少)  
+注：i从1开始  
+代码演示:  
+1、对Customers表创建通用的查询方法  
+```java
+public class Customers {
+    //属性的名字与表中的列名不同
+    private int ID;
+    private String NAME;
+    private String EMAIL;
+    private Date BIRTH;
+    public int getID() {
+        return ID;
+    }
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+    public String getNAME() {
+        return NAME;
+    }
+    public void setNAME(String NAME) {
+        this.NAME = NAME;
+    }
+    public String getEMAIL() {
+        return EMAIL;
+    }
+    public void setEMAIL(String EMAIL) {
+        this.EMAIL = EMAIL;
+    }
+    public Date getBIRTH() {
+        return BIRTH;
+    }
+    public void setBIRTH(Date BIRTH) {
+        this.BIRTH = BIRTH;
+    }
+    @Override
+    public String toString() {
+        return "Customers{" +
+                "ID=" + ID +
+                ", NAME='" + NAME + '\'' +
+                ", EMAIL='" + EMAIL + '\'' +
+                ", BIRHT=" + BIRTH +
+                '}';
+    }
+}
+```  
+2、编写对customers表通用的查询操作  
+```java
+public class MyTest {
+    /**
+     * @param sql 要执行的sql语句
+     * @param args sql语句中占位符?的值，有几个?写几个值，传递到可变个数形参中
+     * @return 存放查询结果的List集合
+     */
+    public static List<Customers> Query(String sql, Object...args) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = JDBCUtils.getConnection();
+            preparedStatement = connection.prepareStatement(sql);
+            //通过循环给?赋值
+            for (int i = 0; i < args.length; i++) {
+                preparedStatement.setObject(i + 1, args[i]);
+            }
+            //执行sql语句
+            resultSet = preparedStatement.executeQuery();
+            /*不同的sql语句得到的结果集不同，需要获得结果集的列数和名字，
+              通过结果集的列数和名字，可以得知Order类中的哪些属性要被赋值 */
+            //获取结果集的元数据
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            //定义List集合
+            List<Customers> list = new ArrayList<>();
+            //开始遍历结果集并将结果放在List集合中
+            while (resultSet.next()) {
+                //在while中判断为真才创建对象，若结果集无数据但创建了对象，造成空间浪费
+                Customers customers = new Customers();
+                for (int i = 0; i < columnCount; i++) {
+                    //获取所在行的指定列的值，通过反射，将此值存入对应的属性
+                    Object columnValue = resultSet.getObject(i + 1);
+                    /*获取所在行的指定列的名称(属性名)，由于属性名与列名不同，
+                      故通过给列起别名使用getColumnLabel */
+                    String columnLabel = metaData.getColumnLabel(i + 1);
+                    //由于未知给哪个属性赋值，故通过反射将columnValue赋值给对应的属性
+                    Field field = Customers.class.getDeclaredField(columnLabel);
+                    field.setAccessible(true);
+                    field.set(customers, columnValue);
+                }
+                list.add(customers);
+            }
+            return list;
+        } catch (Exception throwables) {
+            throwables.printStackTrace();
+        } finally {
+            JDBCUtils.close(resultSet, preparedStatement, connection);
+        }
+        return null;
+    }
+    //测试
+    public static void main(String[] args) {
+        String sql = "select email as EMAIL from customers where id = ? or id = ?";
+        List<Customers> list = Query(sql,3,5);
+        System.out.println(list);
+    }
+}
+```  
+3、对不同表创建通用的查询方法  
+```java
+public class MyTest {
+    public static <T> List<T> Query(Class<T> clazz, String sql, Object...args) {
+        try {
+            Connection connection = JDBCUtils.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                preparedStatement.setObject(i + 1, args[i]);
+            }
+            ResultSet resultSet = preparedStatement.executeQuery();
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            List<T> list = new ArrayList<>();
+            while (resultSet.next()) {
+                T t = clazz.newInstance();
+                for (int i = 0; i < columnCount; i++) {
+                    Object columnValue = resultSet.getObject(i + 1);
+                    String columnName = metaData.getColumnLabel(i + 1);
+                    Field field = clazz.getDeclaredField(columnName);
+                    field.setAccessible(true);
+                    field.set(t, columnValue);
+                }
+                list.add(t);
+            }
+            return list;
+        } catch (Exception throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
+    }   
+    //测试
+    public static void main(String[] args) {
+        String sql =
+                "select id as ID,name as NAME from customers where id = ? or id = ?";
+        List<Customers> list = Query(Customers.class, sql, 3,4);
+        System.out.println(list);
 
+        String sql2 =
+                "select order_name as name,order_id as id from `order` where order_id = ?"; //order要加``是因为order是mysql的关键字
+        List<Order> list2 = Query(Order.class, sql2, 2);
+        System.out.println(list2);
+    }
+}
+```
+PreparedStatement的好处：(以后均使用此接口，弃用Statement)  
+1、解决sql的注入问题  
+2、可以操作Blob的数据(二进制的大型数据)
+void setBlob(int parameterIndex, InputStream inputStream)；
+3、可以实现更高效的批量操作  
+代码演示:上面已经演示过了防注入问题，下面是演示2和3的操作。  
+### 操作Blob数据及进行批量操作  
+代码演示：在costumers表操作Blob类型的数据  
+1、向customers表插入Blob类型的数据
+```java
+Connection connection = null;
+PreparedStatement preparedStatement = null;
+try {
+    connection = JDBCUtils.getConnection();
+    String sql = "insert into customers(id,photo) values(?,?)";
+    preparedStatement = connection.prepareStatement(sql);
+    preparedStatement.setInt(1,19);
+    preparedStatement.setBlob(2,new FileInputStream("girl.jpg"));
+    preparedStatement.executeUpdate();
+} catch (SQLException | FileNotFoundException throwables) {
+    throwables.printStackTrace();
+} finally {
+    JDBCUtils.close(preparedStatement,connection);
+}
+```  
+2、读取customers表中Blob类型的数据，并输出到本地
+```java
+Connection connection = null;
+PreparedStatement preparedStatement = null;
+ResultSet resultSet = null;
+FileOutputStream fileOutputStream = null;
+InputStream inputStream = null;
+try {
+    connection = JDBCUtils.getConnection();
+    String sql = "select photo from customers where id = ?";
+    preparedStatement = connection.prepareStatement(sql);
+    preparedStatement.setInt(1,19);
+    resultSet = preparedStatement.executeQuery();
+    while (resultSet.next()) {
+        Blob blob = resultSet.getBlob("photo");
+        //调用Blob中的getBinaryStream方法获取指定文件的输入流
+        inputStream = blob.getBinaryStream();
+        //指定输出流
+        fileOutputStream = new FileOutputStream("result.jpg");
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = inputStream.read(buffer)) != -1) {
+            fileOutputStream.write(buffer, 0, len);
+        }
+    }
+} catch (SQLException | FileNotFoundException throwables) {
+    throwables.printStackTrace();
+} catch (IOException e) {
+    e.printStackTrace();
+} finally {
+    JDBCUtils.close(resultSet,preparedStatement, connection);
+    if (inputStream != null) {
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    if (fileOutputStream != null) {
+        try {
+            fileOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+} /*执行完毕，当前moudle下会出现result.jpg，内容是表中id=19的photo列属性的值*/
+```  
 
 
