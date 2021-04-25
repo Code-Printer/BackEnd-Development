@@ -777,6 +777,73 @@ public static void main(String[] args) {
         }
     }
 }
+```    
+### 数据库连接池
+概念：是一个存放数据库连接的容器，容器被创建之后，容器中会申请一些连接对象，当用户来访问数据库时，从容器中获取连接对象，用户访问完之后，会将连接对象归还给容器。  
+好处：节约资源、用户访问高效。  
+实现：使用javax.sql包下的DataSource接口，DataSource 接口由驱动程序供应商实现。  
+DataSource中的方法：  
+*获取连接：Connection getConnection()。  
+*归还连接：Connection中的close()方法：如果连接对象Connection是从连接池中获取 的，那么调用此方法则不会再关闭连接，而是将连接放回数据库连接池中。  
+#### Druid数据库连接池技术  
+步骤：  
+1、导入jar包  
+2、定义配置文件druid.properties，其中的内容是： 
+```properties 
+driverClassName=com.mysql.jdbc.Driver
+url=jdbc:mysql://localhost：3306/test
+username=root
+password=root
+#初始化连接数量
+initialSize=5
+#最大连接数
+maxActive=10
+#最大等待超时时间
+maxWait=3000
+```  
+程序中使用步骤：
+1、调用DataSource source=DruidDataSourceFactory.createDataSource(Properties pro);  
+2、调用Connection xxx = source.getConnection();获取连接(需要几个连接数就调用几次)   
+代码演示：代码演示13：演示Druid数据库连接池的使用  
+```java
+Properties properties = new Properties();
+properties.load(new FileInputStream("druid.properties"));
+DataSource dataSource = DruidDataSourceFactory.createDataSource(properties);
+Connection connection = dataSource.getConnection();
+```   
+代码演示：使用Druid数据库连接池修改JDBCUtils工具类  
+```java
+public class JDBCUtils {
+    //1.定义成员变量DataSource
+    private static DataSource ds;
+    static {
+        try {
+            //1.加载配置文件
+            Properties pro=new Properties();
+            properties.load(new FileInputStream("druid.properties"));
+            //2.获取DataSource
+            ds= DruidDataSourceFactory.createDataSource(pro);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    /**
+     * 获取连接
+     */
+    public static Connection getConnection() throws SQLException {
+        return ds.getConnection();
+    }
+/*
+   获取连接池对象
+     */
+   public static DataSource getDataSource(){
+      return ds;
+  }
+} ....其余关闭操作与之前一致
 ```
+
+
 
 
