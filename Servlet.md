@@ -104,7 +104,7 @@ public class TestServlet2 extends HttpServlet {
     <form action="http://localhost:8080/MyTest/Test2" method="post">
         <!--action属性值与web.xml中的<url-pattern>标签内容一致，用于访问到service方法-->
         <input type="submit">
-    </form>
+    </form>  
 </body>
 ```
 运行结果：运行结果：服务器启动之后，在浏览器的地址栏中的后缀加上Test.html，即可访问此页面，点击提交标签， 即可跳转到http://localhost:8080/MyTest/Test2，执行service方法，进而执行doPost方法。
