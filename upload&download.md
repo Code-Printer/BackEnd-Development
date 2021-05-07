@@ -151,7 +151,7 @@ public class DownLoad extends HttpServlet {
             
             ServletContext servletContext = getServletContext();
             String mimeType = servletContext.getMimeType(path + filename);//获取要下载的文件类型：
-            response.setContentType(mimeType);将获取的文件类型告诉客户端
+            response.setContentType(mimeType);//将获取的文件类型告诉客户端
             //设置头信息
             if (request.getHeader("User-Agent").contains("Firefox")) {
                 //火狐浏览器的解决方式
@@ -162,6 +162,7 @@ public class DownLoad extends HttpServlet {
                 response.setHeader("Content-Disposition","attachment; filename="
                         + URLEncoder.encode(filename, "UTF-8"));
             }
+            //对获取文件的下载
             InputStream inputStream = new FileInputStream(file);
             ServletOutputStream ouputStream = response.getOutputStream();
             byte b[] = new byte[1024];
