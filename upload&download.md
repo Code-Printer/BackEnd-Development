@@ -114,13 +114,13 @@ protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws S
         }
     }
 ```  
-### 三、客户端下载服务端的文件  
+### 三、客户端下载服务端的文件(实现点击特定文件并下载)  
 1、下载的主要过程：  
 (1)获取文件File对象  
 (2)判断该文件对象是否存在  
 (3)将获取的文件类型告诉客户端  
 (4)告诉客户端收到的数据用于下载  
-(5)获取要下载的文件并回传给客户端  
+(5)获取要下载的文件回传给客户端  
 2、文件下载的详细过程  
 (1)、获取要下载的文件路径形成File对象,判断该对象是否存在(file.exists())  
 (2)、获取要下载的文件类型：
@@ -134,8 +134,9 @@ protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws S
 attachment表示附件，用于下载
 filename表示下载的文件名，可以与原文件名不同
 此方法无返回值  
-(5)、获取要下载的文件并回传给客户端：使用传统的输入输出流写入的方法。  
+(5)、获取要下载的文件回传给客户端：使用传统的输入输出流写入的方法。  
 代码演示:
+1、DownloadServlet程序
 ```java
 public class DownLoad extends HttpServlet {
     @Override
@@ -183,3 +184,15 @@ public class DownLoad extends HttpServlet {
 
 }
 ```   
+2、html程序(download.html使用<a>标签，进行点击跳转到下载的Servlet程序)  
+```html
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download</title>
+</head>
+<body>
+<a href="download?filename=数据库的文件">读取数据库的文件并显示</a>
+</body>
+</html>
+```  
