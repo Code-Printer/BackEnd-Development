@@ -794,7 +794,7 @@ DataSource中的方法：
 driverClassName=com.mysql.jdbc.Driver
 url=jdbc:mysql://localhost：3306/test
 username=root
-password=root
+password=234414
 #初始化连接数量
 initialSize=5
 #最大连接数
@@ -821,7 +821,7 @@ public class JDBCUtils {
         try {
             //1.加载配置文件
             Properties pro=new Properties();
-            properties.load(new FileInputStream("druid.properties"));
+            pro.load(new FileInputStream("druid.properties"));
             //2.获取DataSource
             ds= DruidDataSourceFactory.createDataSource(pro);
         } catch (IOException e) {
@@ -842,7 +842,7 @@ public class JDBCUtils {
    public static DataSource getDataSource(){
       return ds;
   }
-} ....其余关闭操作与之前一致
+} //其余关闭操作与之前一致
 ```
 
 ### Apache - DBUtils的使用
@@ -883,7 +883,7 @@ public class JDBCUtils {
 			conn = JDBCUtils.getConnection3();
 			String sql = "select id,name,email,birth from customers where id = ?";
 			BeanHandler<Customer> handler = new BeanHandler<>(Customer.class);
-			Customer customer = runner.query(conn, sql, handler, 23);
+			Customer customer = runner.query(conn, sql, handler, 23); //如果数据库中没有就数据就为null。
 			System.out.println(customer);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -895,24 +895,21 @@ public class JDBCUtils {
 	/*
 	 * BeanListHandler:是ResultSetHandler接口的实现类，用于封装表中的多条记录构成的集合
 	 */
-	@Test
-	public void testQuery2() {
-		Connection conn = null;
-		try {
-			QueryRunner runner = new QueryRunner();
-			conn = JDBCUtils.getConnection3();
-			String sql = 
-					"select id,name,email,birth from customers where id < ?";	
-			BeanListHandler<Customer>  handler =
-					new BeanListHandler<>(Customer.class);
-			List<Customer> list = runner.query(conn, sql, handler, 23);
-			list.forEach(System.out::println);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally{	
-			JDBCUtils.closeResource(conn, null);
-		}	
-	}
+	public static <T>List<T> testSelect(Class<T> clazz, String sql){
+        Connection connection1 = null;
+        try{
+            QueryRunner queryRunner = new QueryRunner();
+            connection1 = JDBCUtils.getConnection();
+            BeanListHandler<T> beanHandler = new BeanListHandler<>(clazz);
+            List<T> list = queryRunner.query(connection1,sql,beanHandler,20);//如果在数据库中没有查询到，则list的长度为0;
+            return list;
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            JDBCUtils.close(null,connection1);
+        }
+        return null;
+    }
 
 	/*
 	 * MapHander:是ResultSetHandler接口的实现类，对应表中的一条记录
