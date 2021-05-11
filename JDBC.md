@@ -897,18 +897,18 @@ public class JDBCUtils {
 	 */
 	public static <T>List<T> testSelect(Class<T> clazz, String sql){
         Connection connection1 = null;
+        List<T> list = null;
         try{
             QueryRunner queryRunner = new QueryRunner();
             connection1 = JDBCUtils.getConnection();
             BeanListHandler<T> beanHandler = new BeanListHandler<>(clazz);
-            List<T> list = queryRunner.query(connection1,sql,beanHandler,20);//如果在数据库中没有查询到，则list的长度为0;
-            return list;
+            list = queryRunner.query(connection1,sql,beanHandler,56);//数据库库中没有，list.size为0.
         }catch (Exception e){
             e.printStackTrace();
         }finally {
             JDBCUtils.close(null,connection1);
         }
-        return null;
+        return list;
     }
 
 	/*
