@@ -80,7 +80,7 @@ b. 如果要共享，使用Cookie对象的setPath(String path)方法设置cookie
 (2) 无，是第一次访问：
 ①在浏览器显示：您好，欢迎您首次访问
 ②将现在的时间写回名为lastTime的cookie中  
-方法：使用jsp实现，让被访问的Servlet程序被访问时转到jsp就好了。
+方法：使用jsp实现，让被访问的Servlet程序被访问时重定向到该jsp页面就好了。
 ```jsp
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
