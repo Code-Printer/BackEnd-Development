@@ -1,8 +1,8 @@
 ## 会话技术  
 1、一次会话包含多个请求和响应(一次会话表示浏览器第一次给服务器发送请求，会话建立，直到一方断开为止)。  
 2、功能：在一次会话的多次请求间共享数据。  
-3、方式：保存在客户端(浏览器端)会话技术：Cookie，保存在服务端会话技术：Session  
-## Cookie
+3、方式：保存在客户端(浏览器)会话技术：Cookie，保存在服务端会话技术：Session  
+## Cookie(服务器会把Cookie对象发给用户浏览器，浏览器会存储该Cookie对象，注意是浏览器不是浏览器端)
 1、概念：将数据保存在客户端，客户端有了Cookie后，每次请求都会将Cookie发送给服务器端。  
 2、使用步骤：  
 1、创建Cookie对象，绑定数据(键值对)  
@@ -12,5 +12,116 @@
 代码演示：  
 1、(1)和(2)  
 ```java
-
+public class CookieTest1 extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //1. 创建Cookie对象，参数类似键值对
+        Cookie cookie = new Cookie("msg", "hello");
+        //2.服务器向浏览器发送Cookie
+        response.addCookie(cookie);
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doPost(request,response);
+    }
+}
 ```
+2、(3)和(4)  
+```java
+public class CookieTest2 extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //3. 服务器获取浏览器发过来的Cookie对象
+        Cookie[] cookies = request.getCookies();
+        //4. 服务器获取Cookie对象的键值对
+        for (Cookie cookie :
+                cookies) {
+            String name = cookie.getName();
+            String value = cookie.getValue();
+            System.out.println("获得的Cookie对象的值：" + name + ":" + value);
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doPost(request, response);
+    }
+}
+```  
+运行结果：先让浏览器请求访问ServletCookieTest1，此时服务器会返回给客户端一个Cookie对象，后面再次访问SerevletCookieTest2时，浏览器就会连获取的Cookie对象一起发送给服务器，服务器可以获取它的键值对。  
+上述运行过程：  
+![result](https://static01.imgkr.com/temp/b4e7adcd22d54f16a8b11a0e64150d47.png)  
+
+## Cookie的细节  
+1、服务器一次可以发送多个Cookie对象给客户端，使用response调用多次addCookie方法即可。  
+2、Cookie在浏览器中保存的时间：  
+(1)默认情况下，当当前浏览器关闭时，Cookie对象中的数据被销毁。  
+(2)持久化存储，使用Cookie对象的setMaxAge(int seconds) (该方法中的参数为正数时(秒数)，将Cookie数据写进硬盘，时间一到，数据失效，此时间指的是Cookie对象创建后开始计时，并不是关闭浏览器后才开始计时；参数为负数，默认情况；参数为0，删除Cookie对象数据)。  
+3、在Tomcat8之后Cookie可以存储中文，但特殊字符仍不支持，建议使用URL编码格式，对中文数据进行编码。(URLEncoder.encode("含中文的内容","UTF-8");)  
+4、Cookie的共享问题：(1) 一个Tomcat服务器中，部署了多个web项目，这些web项目cookie的共享说明：
+a. 默认情况，参数是web工程路径，只有这个工程才可以访问到，其余工程无法访问
+b. 如果要共享，使用Cookie对象的setPath(String path)方法设置cookie的获取范围：可以设置参数为”/” ( /被浏览器解析得到的地址为http://ip:port/ )
+(2) 不同的Tomcat服务器间cookie的共享说明：
+使用Cookie对象的setDomain(String path)方法，参数设置为一级域名，则一级域名相同的不同服务器之间Cookie可共享
+如：setDomain(“.baidu.com”)，则tieba.baidu.com与news.baidu.com等的cookie可共享。  
+## Cookie的特点和作用  
+1、客户端一旦有了Cookie以后，每次请求都会把Cookie对象发送给服务器。  
+2、浏览器对单个Cookie有大小限制(4kB),对同一个域名下的总cookies的数量也有限制(20个)  
+3、(1)Cookie一般用于存储少量的安全性较低的数据。
+(2)<font color = "white">在不登陆的情况下，完成服务器对客户端的身份识别</font>，如没有登录百度账号的前提下打开百度，设置搜索引擎搜索时不提示，以后打开浏览器访问百度时，不会再出现搜索提示框，原 理：百度服务器将设置的Cookie信息保存到浏览器，下次访问百度时，百度服务器获取浏览器的Cookie，根据Cookie的值决定要不要显示提示框。  
+## Cookie的应用实例  
+需求：访问一个Servlet程序：
+(1) 如果是第一次访问，提示：您好，欢迎您首次访问
+(2) 如果不是第一次访问，提示：欢迎回来，您上次的访问时间是：xxxx
+分析：
+使用Cookie来完成，在服务器判断客户端是否有一个名为lastTime的cookie对象
+(1) 有，不是第一次访问：
+①在浏览器显示：欢迎回来，您上次的访问时间是：xxxx
+②将现在的时间写回名为lastTime的cookie中
+(2) 无，是第一次访问：
+①在浏览器显示：您好，欢迎您首次访问
+②将现在的时间写回名为lastTime的cookie中  
+方法：使用jsp实现，让被访问的Servlet程序被访问时转到jsp就好了。
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<%  
+    Cookie[] cookies = request.getCookies();
+    boolean flage = false;
+    if (cookies != null && cookies.length > 0){
+        for (Cookie cookie:cookies){
+            if ("lastTime".equals(cookie.getName())){
+                flage = true;
+                String lastTime = cookie.getValue();
+                lastTime = URLDecoder.decode(lastTime,"UTF-8");
+                out.write("欢迎回来，您上次的访问时间是" + lastTime);
+                Date date = new Date();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+                String format = simpleDateFormat.format(date);
+                format = URLEncoder.encode(format,"UTF-8");
+                cookie.setValue(format);
+                cookie.setMaxAge(60 * 60 * 24 * 30);
+                response.addCookie(cookie);
+                break;
+            }
+        }
+    }
+    %>
+<%
+            if (cookies == null || cookies.length == 0 || flage == false){
+                Date date = new Date();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+                String format = simpleDateFormat.format(date);
+                format = URLEncoder.encode(format,"UTF-8");
+                Cookie cookie = new Cookie("lastTime",format);
+                cookie.setMaxAge(60 * 60 * 24 * 30);
+                response.addCookie(cookie);
+                out.write("您好，欢迎首次访问");
+            }
+    %>
+</body>
+</html>
+```  
