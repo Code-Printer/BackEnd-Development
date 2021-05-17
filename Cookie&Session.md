@@ -51,7 +51,7 @@ public class CookieTest2 extends HttpServlet {
 上述运行过程：  
 ![result](https://static01.imgkr.com/temp/b4e7adcd22d54f16a8b11a0e64150d47.png)  
 
-## Cookie的细节  
+### Cookie的细节  
 1、服务器一次可以发送多个Cookie对象给客户端，使用response调用多次addCookie方法即可。  
 2、Cookie在浏览器中保存的时间：  
 (1)默认情况下，当当前浏览器关闭时，Cookie对象中的数据被销毁。  
@@ -63,12 +63,12 @@ b. 如果要共享，使用Cookie对象的setPath(String path)方法设置cookie
 (2) 不同的Tomcat服务器间cookie的共享说明：
 使用Cookie对象的setDomain(String path)方法，参数设置为一级域名，则一级域名相同的不同服务器之间Cookie可共享
 如：setDomain(“.baidu.com”)，则tieba.baidu.com与news.baidu.com等的cookie可共享。  
-## Cookie的特点和作用  
+### Cookie的特点和作用  
 1、客户端一旦有了Cookie以后，每次请求都会把Cookie对象发送给服务器。  
 2、浏览器对单个Cookie有大小限制(4kB),对同一个域名下的总cookies的数量也有限制(20个)  
 3、(1)Cookie一般用于存储少量的安全性较低的数据。
 (2)<font color = "white">在不登陆的情况下，完成服务器对客户端的身份识别</font>，如没有登录百度账号的前提下打开百度，设置搜索引擎搜索时不提示，以后打开浏览器访问百度时，不会再出现搜索提示框，原 理：百度服务器将设置的Cookie信息保存到浏览器，下次访问百度时，百度服务器获取浏览器的Cookie，根据Cookie的值决定要不要显示提示框。  
-## Cookie的应用实例  
+### Cookie的应用实例  
 需求：访问一个Servlet程序：
 (1) 如果是第一次访问，提示：您好，欢迎您首次访问
 (2) 如果不是第一次访问，提示：欢迎回来，您上次的访问时间是：xxxx
@@ -125,3 +125,120 @@ b. 如果要共享，使用Cookie对象的setPath(String path)方法设置cookie
 </body>
 </html>
 ```  
+## Session介绍  
+1、概念：Session是服务端的会话技术，在一次会话的多次请求间共享数据，将数据保存到服务器端，常用来保存用户登录的信息(用户名和密码)。  
+2、常用方法：  
+(1)获取HttpSession对象  
+HttpSession session = request.getSession();
+第一次调用是在创建Session会话，后面调用就是前面创建的Session会话对象。(这与Cookie创建(Cookie cookie = new Cookie(name,value),response.add(cookie))有本质的区别)。  
+(2)HttpSession的方法：  
+oid setAttribute(String name, Object value);(设置该对象的键值)  
+Object getAttribute(String name);(根据名字获取值)  
+void removeAttribute(String name);(根据名字删除键值)  
+代码演示： 
+1、SessionTest1 
+```java
+public class SessionDemo1 extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //1. 创建Session会话
+        HttpSession session = request.getSession();
+        //2. 存储数据
+        session.setAttribute("msg", "Hello! Session!");
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doPost(request, response);
+    }
+}
+```  
+2、SessionTest2  
+```java
+public class SessionDemo2 extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //1. 获取Session
+        HttpSession session = request.getSession();
+        //2. 获取数据
+        Object msg = session.getAttribute("msg");
+        System.out.println(msg);
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doPost(request, response);
+    }
+}
+```  
+
+3、上述程序原理：<font color="white">Session底层是基于Cookie实现的。</font>  
+![result](https://static01.imgkr.com/temp/2977225269934c18999dd20794c305ba.png)  
+
+注意：每个Seeion都有其唯一的id号，这个id号是由服务器在创建Session对象时自动生成的，可通过getId()获取当前Session对象的id号。     
+### Session的细节  
+Session的销毁方式：  
+(1)服务器关闭  
+(2)Session对象调用invalidate()方法  
+(3)Session对象不设置存活时间默认存活30分钟，可以在web.xml中配置修改默认的存活时间。  
+```xml
+<session-config>
+    <session-timeout>30</session-timeout>
+  </session-config>
+```  
+1、如果客户端(浏览器)关闭后重启但服务器未关闭，两次获取的Session是否是同一个？  
+(1)默认情况下，不是，因为Cookie消失了，Session自然也消失了。  
+(2)如果需要相同，则需要设置Cookie不会随浏览器的关闭而失效。故需要设置存活时间存储到硬盘上。  
+```java
+Cookie c = new Cookie("JSESSION",session.getId());
+c.setMaxAge(60*60) //表示一小时  
+response.addCookie(c);
+``` 
+2、如果客户端不关闭，而服务器端关闭，两次获取的Session对象是否是同一个？  
+不是同一个，但为了保证数据不丢失，Tomcat服务器会自动完成保存Session数据的操作：  
+(1)、Session的钝化：在服务器正常关闭之前，将Session对象序列化到硬盘上。
+(2)、Session的活化：在服务器重新启动后，将Session文件反序列化成为内存中的Session对象。(即Session对象肯定不是同一个，但Session对象中的数据是相同的)。  
+Session的特点：  
+1、一次会话只有一个Session对象，Session用于存储一次会话中的多次请求数据(一般存储的是安全性较高的数据)。  
+2、Session中值可以是任意类型的，任意大小的数据。  
+### Session和Cookie的区别：  
+(1)Session存储在服务器端，Cookie存储在客户端  
+(2)Session存储的数据没有大小限制，Cookie存储的数据有(4kb)。  
+(3)Session数据安全，Cookie数据相对不安全。  
+
+## Cookie实例：免用户名登录  
+说明：成功登录后，关闭浏览器，重新启动浏览器，浏览器的用户名栏记住了上次登录的用户名(QQ的登录功能)。  
+代码演示：  
+1、login.jsp
+```jsp
+<body>
+    <form action="http://localhost:8080/MyTest/LoginServlet" method="post">
+        用户名：<input type="text" name="username" value="${cookie.username.value}"> <br>
+        密码：<input type="password" name="password"> <br>
+        <input type="submit" value="登录">
+    </form>
+</body>
+```    
+2、LoginServlet.java  
+```java
+public class LoginServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        //设置正确的用户名为周杰伦，密码是123
+        if ("jay".equals(username) && "123".equals(password)) {
+            Cookie cookie = new Cookie("username", username);
+            cookie.setMaxAge(60 * 60 * 24 * 7); //cookie保存一周
+            response.addCookie(cookie);
+            System.out.println("登陆成功！");
+        } else {
+            System.out.println("登陆失败！");
+        }
+    }
+}
+```  
+运行结果：使用正确的登录用户密码登录后，再次访问登录页面，用户名输入框会自动的填入上次的用户名。  
+上述程序的运行逻辑如下图：  
+![result](https://static01.imgkr.com/temp/10e56fda9bb84e44bc214d2e0beeebe9.png)  
+
+
+
+
