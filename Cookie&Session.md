@@ -56,7 +56,7 @@ public class CookieTest2 extends HttpServlet {
 2、Cookie在浏览器中保存的时间：  
 (1)默认情况下，当当前浏览器关闭时，Cookie对象中的数据被销毁。  
 (2)持久化存储，使用Cookie对象的setMaxAge(int seconds) (该方法中的参数为正数时(秒数)，将Cookie数据写进硬盘，时间一到，数据失效，此时间指的是Cookie对象创建后开始计时，并不是关闭浏览器后才开始计时；参数为负数，默认情况；参数为0，删除Cookie对象数据)。  
-3、在Tomcat8之后Cookie可以存储中文，但特殊字符仍不支持，建议使用URL编码格式，对中文数据进行编码。(URLEncoder.encode("含中文的内容","UTF-8");)  
+3、在Tomcat8之后Cookie可以存储中文，但特殊字符仍不支持，建议使用URL编码格式，先对需要赋值的中文数据进行编码，再进行cookie的构造方法赋值(同样的，当需要从cookie对象中取出中文数据时，需要对取出的数据进行URLEncoder解码decode，才能显示为中文数据)。(URLEncoder.encode("含中文的内容","UTF-8");)  
 4、Cookie的共享问题：(1) 一个Tomcat服务器中，部署了多个web项目，这些web项目cookie的共享说明：
 a. 默认情况，参数是web工程路径，只有这个工程才可以访问到，其余工程无法访问
 b. 如果要共享，使用Cookie对象的setPath(String path)方法设置cookie的获取范围：可以设置参数为”/” ( /被浏览器解析得到的地址为http://ip:port/ )
@@ -200,9 +200,11 @@ Session的特点：
 1、一次会话只有一个Session对象，Session用于存储一次会话中的多次请求数据(一般存储的是安全性较高的数据)。  
 2、Session中值可以是任意类型的，任意大小的数据。  
 ### Session和Cookie的区别：  
-(1)Session存储在服务器端，Cookie存储在客户端  
-(2)Session存储的数据没有大小限制，Cookie存储的数据有(4kb)。  
-(3)Session数据安全，Cookie数据相对不安全。  
+(1)Session存储在服务器端，Cookie存储在客户端。  
+(2)Session在一次会话中只能有一个，Cookie在一次会话中可以有多个。  
+(3)Session可以存储的值是任意类型，而Cookie存储的值只能是字符串。    
+(4)Session存储的数据没有大小限制，Cookie存储的数据有(4kb)。  
+(5)Session数据安全，Cookie数据相对不安全。  
 
 ## Cookie实例：免用户名登录  
 说明：成功登录后，关闭浏览器，重新启动浏览器，浏览器的用户名栏记住了上次登录的用户名(QQ的登录功能)。  
