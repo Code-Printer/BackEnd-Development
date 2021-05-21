@@ -241,6 +241,82 @@ public class LoginServlet extends HttpServlet {
 上述程序的运行逻辑如下图：  
 ![result](https://static01.imgkr.com/temp/10e56fda9bb84e44bc214d2e0beeebe9.png)  
 
+## 谷歌浏览器查看Cookie信息  
+![result](https://static01.imgkr.com/temp/8d6490772cae444cb3087e7acc2376e9.png)  
 
+## 谷歌验证码的底层原理   
+![result](https://static01.imgkr.com/temp/caa59d53311f424789b6469a0f6b6f9b.png)  
 
+### 谷歌验证码使用代码演示(使用谷歌验证码的jar包)  
+谷歌验证码使用步骤：  
+1、在maven的pom.xml中配置谷歌的验证码的jar包。  
+```xml
+<dependency>
+    <groupId>com.github.penggle</groupId>
+    <artifactId>kaptcha</artifactId>
+    <version>2.3.2</version>
+</dependency>
+```
+2、在web.xml中配置谷歌验证码的映射路径  
+```xml
+<!--访问kaptcha.jpg就会得到一张验证码，并将此验证码的内容数据保存在Session中键名为KAPTCHA_SESSION_KEY -->
+<servlet>
+    <servlet-name>KaptchaServlet</servlet-name>
+    <servlet-class>com.google.code.kaptcha.servlet.KaptchaServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>KaptchaServlet</servlet-name>
+    <url-pattern>/kaptcha.jpg</url-pattern>
+</servlet-mapping>
+```  
+3、html验证码数据提交页面  
+```html
+<body>
+    <form action="http://localhost:8080/MyTest/Servlet">
+        验证码：<input type="text" style="width: 80px;" name="code">
+        <img src="http://localhost:8080/MyTest/kaptcha.jpg" alt="验证码没有找到"
+             style="width: 100px; height: 28px;" id="code_img"> <br>
+        <input type="submit" value="登录">
+    </form>
+</body>
+```  
+4、进行验证码数据验证  
+```java
+import static com.google.code.kaptcha.Constants.KAPTCHA_SESSION_KEY;
+public class Servlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //获取Session中的验证码
+        String attribute = (String) request.getSession().getAttribute(KAPTCHA_SESSION_KEY);
+        //删除Session中的验证码
+        request.getSession().removeAttribute(KAPTCHA_SESSION_KEY);
+        //获取用户输入的验证码
+        String code = request.getParameter("code");
+        if (attribute.equalsIgnoreCase(code)) {
+            System.out.println("验证码正确！");
+        } else {
+            System.out.println("验证码错误！");
+        }
+    }
+}
+```
+### 点击图片切换验证码  
+![result](https://static01.imgkr.com/temp/ad96e4cc1a58482f90c5c4312022ef09.png)  
 
+代码实现跳过浏览器缓存，点击验证码进行验证码切换(下面代码需要写到同一html页面中，在script标签中写下)：  
+1、第一种在同一页面的script标签中写js事件响应函数(实质就是改变img标签的src属性)  
+```js
+window.onload = function () {
+    //window.onload表示页面加载完毕后立马执行的事件
+    //通过验证码图片的id属性值绑定单击事件
+    var elementById = document.getElementById("code_img");
+    elementById.onclick = function () {
+        //1. 事件响应的function函数中的this对象是当前正在响应事件的标签的dom对象
+        //2. src属性可读可写
+        this.src = "http://localhost:8080/MyTest/kaptcha.jpg?d=" + new Date();
+    }
+}
+```  
+2、既然是想改变img标签的src属性的值，那就直接通过绑定onclick属性来改写imgsrc的值。    
+```html
+        <img src= "http://localhost:8080/Cookie_Session/Kaptcha.jpg" alt="图片还未找到" style="width: 100px;height: 28px;" id="codeimg"  onclick="this.src=this.src+'?'+new Date();">
+```
