@@ -194,7 +194,7 @@ response.addCookie(c);
 ``` 
 2、如果客户端不关闭，而服务器端关闭，两次获取的Session对象是否是同一个？  
 不是同一个，但为了保证数据不丢失，Tomcat服务器会自动完成保存Session数据的操作：  
-(1)、Session的钝化：在服务器正常关闭之前，将Session对象序列化到硬盘上。
+(1)、Session的钝化：在服务器正常关闭之前，将Session对象序列化到硬盘上。  
 (2)、Session的活化：在服务器重新启动后，将Session文件反序列化成为内存中的Session对象。(即Session对象肯定不是同一个，但Session对象中的数据是相同的)。  
 Session的特点：  
 1、一次会话只有一个Session对象，Session用于存储一次会话中的多次请求数据(一般存储的是安全性较高的数据)。  
@@ -239,9 +239,11 @@ public class LoginServlet extends HttpServlet {
 ```  
 运行结果：使用正确的登录用户密码登录后，再次访问登录页面，用户名输入框会自动的填入上次的用户名。  
 上述程序的运行逻辑如下图：  
+  
 ![result](https://static01.imgkr.com/temp/10e56fda9bb84e44bc214d2e0beeebe9.png)  
 
-## 谷歌浏览器查看Cookie信息  
+## 谷歌浏览器查看Cookie信息   
+
 ![result](https://static01.imgkr.com/temp/8d6490772cae444cb3087e7acc2376e9.png)  
 
 ## 谷歌验证码的底层原理   
