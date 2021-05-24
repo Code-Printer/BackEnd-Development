@@ -132,9 +132,9 @@ b. 如果要共享，使用Cookie对象的setPath(String path)方法设置cookie
 HttpSession session = request.getSession();
 第一次调用是在创建Session会话，后面调用就是获取前面创建的Session会话对象。(这与Cookie创建(Cookie cookie = new Cookie(name,value),response.add(cookie))有本质的区别)。  
 (2)HttpSession的方法：  
-void setAttribute(String name, Object value);(设置该对象的键值)  
-Object getAttribute(String name);(根据名字获取值)  
-void removeAttribute(String name);(根据名字删除键值)  
+void setAttribute(String name, Object value);(给session集合添加新的键值对)  
+Object getAttribute(String name);(根据键名获取值)  
+void removeAttribute(String name);(根据键名删除键值)  
 代码演示： 
 1、SessionTest1 
 ```java
