@@ -58,8 +58,8 @@ public class LoginServlet implements Filter {
 4、destory()方法  
 其中1和2是在工程启动时，就创建Filter过滤器。3是在请求拦截路径到服务器时自动执行，如果请求访问的不是拦截路径则不执行。4是在web工程停止时执行(销毁Filter过滤器)。  
 ### FilterConfig类  
-1、FilterConfig类是Filter过滤器的配置文件类， 每次创建Filter的时候，也会创建一个FilterConfig类，其中包含了Filter配置文件的配置信息。  
-2.FilterConfig类的作用是获取Filter过滤器的配置文件内容：
+1、FilterConfig类是Filter过滤器的配置文件类， 每次创建Filter的时候，也会创建一个FilterConfig类，其中包含了Filter的配置信息。  
+2.FilterConfig类的作用是获取Filter过滤器的配置信息：
 (1) 获取Filter的名称，即web.xml文件中<filter-name>标签的值：filterConfig.getFilterName();
 (2) 获取web.xml文件中标签的值(写在filter标签中的<filter-class>，可写多个)，filterConfig.getInitParameter("param-name")如：  
 ```xml
@@ -80,7 +80,7 @@ public class LoginServlet implements Filter {
 1、上述两个Filter拦截的资源路径相同，代表一定会执行两个Filter过滤器的doFilter方法，执行顺序按在xml中的配置来，从高到低执行。  
 2、如果两个Filter拦截资源不同，且拦截资源符合Filter1，不符合Filter2，则会执行Filter1 的doFilter方法，且执行其中的chain.doFilter方法时，不会去执行Filter2的doFilter方法，如果没有符合的过滤器就直接去访问资源，之后执行Filter1的后置代码(在chain.doFilter之后的均是后置代码)。  
 3、如果请求的资源不符合过滤器1和2的拦截路径，两个doFilter方法都不执行  
-4、前置代码、chain.doFilter方法、后置代码都在doFilter方法中  
+4、前置代码、chain.doFilter方法、后置代码都在本类重写doFilter方法中。  
 ### Filter的拦截路径设置
 1、精确匹配
 ```xml
