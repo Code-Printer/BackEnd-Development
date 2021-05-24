@@ -86,7 +86,7 @@ public class IOCTest {
 (8) 容器中使用property标签时会调用setter方法为属性赋值  
 (9) property标签的name属性由getter/setter方法的方法名决定：方法名的set前缀去掉，剩余字符串首字母小写就是name属性值，并不是定义时的属性名  
 (10) 在容器中创建组件对象时默认调用的是无参构造器  
-### 根据bean配置的类的类型获取实例对象  
+### 根据bean配置的类的类型获取实例对象(通过类的类型获取实例对象要求容器内配置的该类组件只有一个，如果有多个则会报异常)  
 ```java
 @Test
    public void test2() {
@@ -132,6 +132,37 @@ public class IOCTest {
        <constructor-arg value="@qq.com"></constructor-arg>
    </bean>
 ```  
-
+### 为类中各种类型的属性赋值  
+1、xml中如果没有给属性赋值，则属性使用默认值：引用类型为null值，基本数据类型为对应的默认值，如果定义类时给属性赋予了默认值，则容器中的对象默认值为初始时赋予的。  
+2、xml中编写的内容都是文本格式，使用property标签赋值时，会自动的进行类型转换(把文本格式转换为对应的属性的类型)，如：<font color="white">String类型的属性在xml中使用property标签进行赋值：value = “null”，赋予的是字符串null，并不是null值。</font>  
+3、给属性赋予特殊值时，应该在property标签中进行赋值，而不是使用value属性赋值。  
+<font color="white">例：给类的属性lastName赋予null值：</font>
+```xml
+<property name="lastName">
+     <null /> <!-- 赋予null值的标签  -->
+</property>
+```  
+<font color="white">例：给类类型的属性赋值</font>  
+1、属性被赋值的类已经在本容器中有定义组件：则在property标签中使用ref标签在ref标签中绑定bean属性，值为其id值，可以引用容器中已经存在的其他组件。注：ref属性表示的是引用，代表地址值相同
+```xml
+<bean class="com.company.Student" id="student3">
+        <property name="eamil">
+        <ref bean = "student1">
+        </property>
+</bean>
+```
+2、容器中没有定义要赋值的属性所在类的组件
+```xml
+<bean id="Student09" class="com.qizegao.test.Student">
+   <property name="book">
+      <!-- 可以使用bean标签创建Book对象：引用内部bean -->
+      <bean class="com.qizegao.test.Book">
+         <property name="author" value="桂纶镁"></property>
+      </bean>
+   </property>
+</bean>
+<!-- 内部bean不可以被getBean方法获取，只能内部使用，所以一般不写id属性 -->
+```  
+<font color="white">例：给List集合类型的属性赋值</font>  
 
 
