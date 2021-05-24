@@ -164,5 +164,225 @@ public class IOCTest {
 <!-- 内部bean不可以被getBean方法获取，只能内部使用，所以一般不写id属性 -->
 ```  
 <font color="white">例：给List集合类型的属性赋值</font>  
+```xml
+<property name="books"> <!-- books为List集合类型的属性名 -->
+      <list> <!-- list标签体中添加每一个元素-->
+        
+         <!-- 第一个元素 -->
+         <bean class="com.qizegao.bean.Book">
+             <property name="bookName" value="西游记"></property>
+         </bean>
+             
+         <!-- 第二个元素，引用外部一个元素 -->
+         <ref bean="book01" /> <!-- book01是xml中另一个组件对象 -->
+     
+      </list>
+   </property>
+```
+<font color="white">例：给Map集合类型的属性赋值</font>
+```xml
+   <property name="maps"> <!-- maps是Map类型的属性名 -->
+      <map> <!-- 在map标签体中编写键值对 -->
+         <!-- 一个entry代表一个键值对 -->
+         <entry key="key01" value="张三"></entry>
+         <entry key="key02" value="18"></entry>
+         <entry key="key03" value-ref="book01"></entry> <!-- 引用其他组件 -->
+         <entry key="key04"> <!-- 使用内部bean -->
+             <bean class="com.qizegao.bean.Car">
+                <property name="carName" value="宝马"></property>
+             </bean>
+         </entry>
+         <entry key="key05">
+             <value>李四</value>
+         </entry>
+      </map>
+   </property>
+```   
+<font color="white">例：给Properties类型的属性赋值</font>  
+```xml
+<!-- 为Properties类型的属性赋值，所有的key、value都是String型的 -->
+   <!-- Student类中添加属性Properties properties -->
+   <bean id="Student10" class="com.qizegao.test.Student">
+       <property name="properties">
+          <props>
+             <!-- Properties的value值写在prop标签中 -->
+             <prop key="username">root</prop>
+             <prop key="password">gaoqize</prop>
+          </props>
+       </property>
+   </bean>
+```   
+
+### 创建各种类型的bean  
+<font color="white">1、使用util(防止标签重复)名称空间创建List对象</font>   
+名称空间在xml文件中主要是用于防止标签重复。  
+1、IDEA中引入名称空间util标签：  
+
+![result](https://static01.imgkr.com/temp/e67c76a27e424889ac810b0a4a417bf2.png)  
+
+代码演示：  
+```xml
+<!--这是一个bean组件 -->
+  <util:list id="util_list" value-type="java.lang.String">
+        <value>foo</value>
+        <value>uoo</value>
+    </util:list>
+```  
+<font color="white">2、通过继承实现bean配置信息的重用</font>   
+```xml
+ <!-- parent属性指定当前的配置信息继承于哪个组件 -->
+   <!--
+       1. 仅仅指的是配置信息的继承，并不代表是类的继承，即二者没有子父类的关系
+       2. 相同的配置信息不用写，需要修改的配置信息写出
+    -->
+   <bean id="Student11" parent="Student01">
+       <property name="lastName" value="李刚"></property>
+       <!-- 其余三项与Student01相同 -->
+   </bean>
+```  
+<font color="white">3、创建单实例和多实例的bean</font>  
+```xml
+   <!-- scope属性可指定此bean为单实例或多实例(默认是单实例的)
+       1. singleton：单实例(不使用scope属性默认的形式)：
+          (1) 创建容器时创建此组件，保存在容器中
+          (2) 每次获取的都是已经创建好的组件(同一个)
+       2. prototype:多实例：
+          (1) 创建容器时不会创建此组件
+          (2) 获取此组件时才创建此组件，并且不会保存在容器中
+          (3) 每次获取该组件对象的都是一个新的对象
+   -->
+
+   <bean id="Student12" class="com.qizegao.test.Student" scope="prototype"></bean>
+```  
+<font color="white">4、通过实现FactoryBean创建爱你bean</font>  
+FactoryBean是Spring的一个接口，此接口中有三个抽象方法，只要是这个接口的实现类，Spring 都认为是一个工厂：
+i. Spring会自动调用该工厂的工厂方法创建实例
+ii. 该工厂创建的组件(实例)，ioc容器创建时不会创建此组件
+iii. 获取组件时才创建组件(对象)，不论FactoryBean的实现类创建的对象是否为单例  
+(1) 创建一个实现了FactoryBean的工厂类  
+```java
+ public class ImplFactoryBean implements FactoryBean<Student>{
+ 
+   //工厂方法，返回创建的对象
+   @Override
+   public Student getObject() throws Exception {
+       Student student = new Student();
+       return student;
+   }
+   
+   //返回创建的对象的类型
+   //Spring会自动的调用这个方法来确定创建的对象是什么类型
+   @Override
+   public Class<?> getObjectType() {
+       return Student.class;
+   }
+  
+   //创建出的对象是否为单例
+   @Override
+   public boolean isSingleton() {
+       return true;
+   }
+ }
+```  
+(2)在xml中创建bean  
+```xml
+<bean id="factorybeanimpl" class="com.qizegao.test.ImplFactoryBean"></bean>
+```  
+(3) 测试  
+```java
+   public void test() {
+       ApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
+       Student student1 =  (Student)ioc.getBean("factorybeanimpl");
+       Student student2 =  (Student)ioc.getBean("factorybeanimpl");
+       System.out.println(student1 == student2); //true
+     }
+```  
+<font color="white">5、创建带有生命周期方法的bean(组件)</font>  
+ 可以为bean自定义一些生命周期方法，Spring在创建或者销毁bean时会自动调用指定的方法， 这些生命周期方法必须无参，但可抛出任何异常。   
+代码演示：  
+(1)、在Student类中添加init方法和destory方法  
+```java
+   //初始化方法
+   public void init() {
+       System.out.println("执行了初始化方法");
+   }
+   //销毁方法
+   public void destory() {
+       System.out.println("执行了销毁方法");
+   }
+```  
+(2)在xml中配置该类的组件  
+```xml
+ <bean id="Student15" class="com.qizegao.test.Student"
+        init-method="init" destroy-method="destory"></bean>
+```  
+(3)测试  
+```java
+   public void test1() {
+       //此类型有close方法
+       ConfigurableApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
+       ioc.close();
+       /**
+        * 运行结果：
+        * 执行了初始化方法
+        * 执行了销毁方法
+        */
+   }
+```  
+注意：(1) 单例bean(创建容器时就创建单例的bean配置对象)的生命周期：(容器创建)调用构造器 → 调用初始化方法 → (容器关闭)调用 销毁方法   
+(2) 多实例bean(获取组件时才创建对应配置的对象)的生命周期：<font color="white">(获取bean)</font>调用构造器 → 调用初始化方法 → (容器关闭)<font color="white"> 不调用bean的销毁方法</font>     
+
+### bean的后置处理器  
+Spring有一个接口：BeanPostProcessor，即后置处理器，其中有两个抽象方法，分别可以在bean的 初始化前后自动的调用。  
+代码演示：  
+1、编写后置处理器(实现BeanPostProcessor接口重写接口中的方法)。  
+```java
+ public class ImplBeanPostProcessor implements BeanPostProcessor {
+  
+    /**
+    * bean初始化之前调用
+    * 参数1：将要初始化的bean
+    * 参数2：xml文件中配置的id
+    */
+   @Override
+   public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+       System.out.println("初始化之前调用的方法");
+       return bean;
+   }
+
+   /**
+    * bean初始化之后调用
+    * 参数1：初始化的bean
+    * 参数2：xml文件中配置的id
+    */
+   @Override
+   public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+       System.out.println("初始化之后调用的方法");
+       return bean;
+   }
+}
+```
+2、在xml中配置该后置处理器的bean组件  
+```xml
+<bean id="beanpostprocessor" class="com.qizegao.test.ImplBeanPostProcessor"></bean>
+```
+3、测试  
+```java
+public void test1() {
+       ConfigurableApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
+       ioc.close();
+       /**
+        * 运行结果：
+        * 初始化之前调用的方法
+        * 执行了初始化方法
+        * 初始化之后调用的方法
+        * 执行了销毁方法
+        */
+   }
+```
+注意：(1)初始化之前、之后执行与相应组件有没有初始化方法并无关系。  
+(2)xml文件中一旦使用了此实现类的配置语句，此xml文件中所有的组件都会执行初始化之前、 之后的方法。  
+(3)单实例后置处理器执行过程：(容器创建)调用构造器 → 初始化之前执行的方法 → 初始化方法 → 初始化之后执行的方法 → (容器销毁)调用销毁方法。  
+(4)初始化之前调用的方法返回null，则此组件在初始化之前就已经成为了null，初始化之后调 用的方法返回null，则此组件初始化之后就会成为null。  
 
 
