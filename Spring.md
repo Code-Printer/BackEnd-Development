@@ -260,6 +260,7 @@ i. Spring会自动调用该工厂的工厂方法创建实例
 ii. 该工厂创建的组件(实例)，ioc容器创建时不会创建此组件
 iii. 获取组件时才创建组件(对象)，不论FactoryBean的实现类创建的对象是否为单例  
 (1) 创建一个实现了FactoryBean的工厂类  
+
 ```java
  public class ImplFactoryBean implements FactoryBean<Student>{
  
@@ -284,6 +285,7 @@ iii. 获取组件时才创建组件(对象)，不论FactoryBean的实现类创�
    }
  }
 ```  
+
 (2)在xml中创建bean  
 ```xml
 <bean id="factorybeanimpl" class="com.qizegao.test.ImplFactoryBean"></bean>
@@ -383,6 +385,201 @@ public void test1() {
 注意：(1)初始化之前、之后执行与相应组件有没有初始化方法并无关系。  
 (2)xml文件中一旦使用了此实现类的配置语句，此xml文件中所有的组件都会执行初始化之前、 之后的方法。  
 (3)单实例后置处理器执行过程：(容器创建)调用构造器 → 初始化之前执行的方法 → 初始化方法 → 初始化之后执行的方法 → (容器销毁)调用销毁方法。  
-(4)初始化之前调用的方法返回null，则此组件在初始化之前就已经成为了null，初始化之后调 用的方法返回null，则此组件初始化之后就会成为null。  
+(4)初始化之前调用的方法返回null，则此组件在初始化之前就已经成为了null，初始化之后调 用的方法返回null，则此组件初始化之后就会成为null。   
+## 注解式创建组件对象  
+### 使用数据库的查询更新进行spring框架演示  
+1、在maven项目中引入mysql、Druid和Spring。  
+```xml
+   <!--引入@Test -->
+   <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+   <!--引入spring-context -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>${org.springframework.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- spring的持久层依赖 -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-orm</artifactId>
+      <version>${org.springframework.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>RELEASE</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>3.2.8.RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>druid</artifactId>
+      <version>1.1.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.17</version>
+    </dependency>
+```  
+2、spring的ioc容器配置xml中编写,记得引入context名称空间
+```xml
+<!-- location属性固定写法：classpath表示引用类路径下的资源-->
+    <context:property-placeholder location="classpath:/properties.propertity"/>
+
+    <!-- 创建一个数据库连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+
+        <!-- ${key}动态取出配置文件中某个key对应的值 -->
+
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="driverClassName" value="${jdbc.driverClassName}"></property>
+
+    </bean>
+```  
+3、测试数据库连接  
+```java
+@Test
+    public void test() throws SQLException {
+        ApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
+        DataSource dataSource = (DataSource)ioc.getBean("dataSource");
+        System.out.println(dataSource.getConnection());
+        //com.mchange.v2.c3p0.impl.NewProxyConnection@64c87930
+    }
+```   
+### 通过注解式创建bean对象  
+ Spring中有四个注解  
+(1) @Controller：推荐给控制层(Servlet)的组件加此注解  
+(2) @Service：推荐给业务逻辑层的组件添加此注解  
+(3) @Repository：推荐给数据库层(Dao层)的组件添加此注解  
+(4) @Component：推荐不属于以上的组件添加此注解  
+注意：
+i. 给所要创建组件的类添加任何一个注解都可快速的将此组件添加到ioc容器的管理中  
+ii. 使用以上四个注解的任何一个均可，但尽量使用推荐  
+步骤：  
+1、在maven项目中配置Spring aop  
+```xml
+ <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>1.8.9</version>
+     </dependency>
+```  
+2、在需要创建对象的类上添加注解
+```java
+import org.springframework.stereotype.Service;
+
+    @Service
+    public class BookService {
+       //内容
+    }
+```  
+3、让Spring自动扫描加了注解的组件，在xml文件中使用context名称空间  
+```xml
+<!-- context:component-scan：自动扫描组件 -->
+<!-- base-package：指定扫描的包，会将此包下的所有包的所有加了注解的类，自动的扫描进ioc容器中 -->
+<context:component-scan base-package="com.qizegao"></context:component-scan>
+<!-- com.qizegao.test 与 com.qizegao.util包都会被扫描，扫描之后符合条件的类图标会加小s -->
+```  
+注意：
+使用注解加入到容器中的组件，和使用配置文件加入到容器中的组件默认行为是一致的(默认组件是单例模式)：  
+i. 组件的默认id是类名首字母小写  
+ii. 组件默认是单例的  
+4、测试  
+```java
+public void test() {
+    ApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
+    System.out.println(ioc.getBean("bookService") == ioc.getBean("bookService"));
+    //true
+  }
+```  
+注意：  
+i. 可以修改组件的id  
+ii. 可以修改组件为多实例，如下： 
+```java
+@Service("newName") // 修改id为newName
+  @Scope(value="prototype") // 修改bean为多实例
+  public class BookService {
+       //内容
+  }
+```   
+测试  
+```java
+  public void test() {
+       ApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
+       System.out.println(ioc.getBean("newName") == ioc.getBean("newName"));
+       //false
+   }
+```  
+### 指定Spring扫描时不包含、只包含的组件  
+```xml
+//不包含
+   <context:component-scan base-package="com.qizegao">
+       <!-- 使用context:exclude-filter指定扫描时不包含的组件：
+             1. type=annotation：按照注解进行排除，使用了expression中指定的注解(全类名)就不会被包含进来
+             2. type=assignable：按照指定的类进行排除，expression中指定要排除的全类名
+        -->
+       <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+   </context:component-scan>
+//只包含
+    //Spring默认是把包中所有满足条件的组件全部扫描进来，故应当先禁用默认的扫描规则
+   <!-- use-default-filters="false"：禁用默认的扫描规则 -->
+   <context:component-scan base-package="com.qizegao" use-default-filters="false">
+        <!-- 使用context:include-filter指定扫描时只包含的组件：用法与context:exclude-filter一致 -->
+        <context:include-filter type="assignable" expression="com.qizegao.test.BookService"/>
+   </context:component-scan>
+```  
+### 使用@Autowired注解根据类型实现自动装配  
+自动装配：自动的为某个属性赋值，一定是去容器中找这个属性对应的组件(以该属性的类型在容器中寻找对应的属性组件)赋值，也就要求此组件 必须在容器中，否则报错。  
+代码演示
+1、在包下创建两个类，使用注解对两个类进行注释  
+```java
+@Service("book")
+public class BookeService {
+    @Autowired
+    private BookDao bookDao;
+    public void save(){
+        System.out.println("要去使用BookDao的save方法");
+        bookDao.save();
+    }
+}
+
+
+@Repository("bookDao")
+public class BookDao {
+    public void save(){
+        System.out.println("正在使用BookDao的save方法");
+    }
+}
+```  
+2、xml中让Spring扫描加了注解的组件  
+```xml
+<context:component-scan base-package="com.qizegao"></context:component-scan>
+```  
+3、测试  
+```java
+ @Test
+    public void test() throws SQLException {
+        ApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
+        BookeService bookeService = ioc.getBean(BookeService.class);
+        bookeService.save();
+    }
+```
+
 
 
