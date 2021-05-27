@@ -260,8 +260,8 @@ MIME类型是Http协议中的数据类型，格式是：大类型/小类型，�
 HttpServletRequest的作用：当客户端发送请求到Tomcat服务器时，Tomcat服务器会把请求来的Http协议信息解析好，封装到Request对象中，然后传递到service方法中，service方法会根据请求方式，调用程序员重写的doGet方法和doPost方法。  
 
 HttpServletRequest的常用方法：  
-getRequestURI()：获取请求的资源路径  
-getRequestURL()：获取请求的绝对路径  
+getRequestURI()：获取请求的资源的绝对路径(不包含主机ip和端口号)  
+getRequestURL()：获取请求的全部路径(浏览器地址栏的路径，有主机的ip地址和端口号)  
 getRemoteHost()：获取客户端的ip地址  
 getHeader()：获取请求头  
 getParameter()：获取请求的参数  
@@ -345,7 +345,7 @@ public class Servlet2 extends HttpServlet {
 ```
 在浏览器的地址栏中输入访问Servlet1的页面路径即可显示结果在控制台。可以得出地址栏的内容不发生变化，但页面自动跳转(访问)到了请求转发对象Servlet2中(即显示http://localhost:8080/MyTest/Servlet2的页面)  
 
-### base标签(html中的标签)的作用(实际开发中的跳转路径采用的是绝对路径)
+### base标签(html中的标签)的作用(实际开发中的跳转路径采用的是相对路径(可移植性))
 base标签可以设置当前页面中所有相对路径跳转时参照指定的路径来进行跳转，在href属性中设置指定路径。  
 代码演示：
 1、在web目录下创建a文件夹下创建b文件夹下创建c.html
@@ -380,7 +380,7 @@ public class Forward extends HttpServlet {
 </body>
 ```
 在地址栏输入http://localhost:63342/FirstWeb/MyTest/web/index.html，点击后成功跳转到 http://localhost:8080/MyTest/Forward ，显示的是c.html
-界面，点击跳转连接无法跳转，这是因为相对路径跳转时会参考当前浏览器地址栏的地址，而当前浏览器的地址栏地址为http://localhost:8080/MyTest/Forward 当c.html中的跳转路径../../index.html抵消后(抵消操作为一个../可以抵消当前路径的的一个文件夹)的真实跳转路径是http://localhost:8080/…/index.html ，显然这个路径是不对的，故不能跳转成功。
+界面，再次点击跳转链接接无法跳转，这是因为相对路径跳转时会参考当前浏览器地址栏的地址，而当前浏览器的地址栏地址为http://localhost:8080/MyTest/Forward 当c.html中的跳转路径../../index.html抵消后(抵消操作为一个../可以抵消当前路径的的一个文件夹)的真实跳转路径是http://localhost:8080/index.html ，显然这个路径是不对的，故不能跳转成功。
 4、此时是由于c.html中的跳转链接参考的地址有问题，故可以修改c.html文件添加使用base标签，改变其跳转时参考的地址。
 ```html
 <head>
