@@ -580,6 +580,7 @@ public class BookDao {
         bookeService.save();
     }
 ```
-
+## Spring AOP动态代理的两种实现方法(基于接口的JDK动态代理和基于没有接口的CGLIB动态代理:区别在于代理类实现的是接口还是继承的类)   
+AOP：面向切面编程，将段代码动态的切入到指定方法的指定位置。 
 
 
