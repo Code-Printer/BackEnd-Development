@@ -544,7 +544,7 @@ ii. 可以修改组件为多实例，如下：
         <context:include-filter type="assignable" expression="com.qizegao.test.BookService"/>
    </context:component-scan>
 ```  
-### 使用@Autowired注解根据类型实现自动装配  
+### 使用@Autowired注解给属性赋值：根据类型实现自动装配  
 自动装配：自动的为某个属性赋值，一定是去容器中找这个属性对应的组件(以该属性的类型在容器中寻找对应的属性组件)赋值，也就要求此组件 必须在容器中，否则报错。  
 代码演示
 1、在包下创建两个类，使用注解对两个类进行注释  
@@ -570,7 +570,7 @@ public class BookDao {
 2、xml中让Spring扫描加了注解的组件  
 ```xml
 <context:component-scan base-package="com.qizegao"></context:component-scan>
-```  
+```   
 3、测试  
 ```java
  @Test
@@ -580,7 +580,78 @@ public class BookDao {
         bookeService.save();
     }
 ```
+### @Autowired注解自动装配原理   
+先按照类型(BookDao)去容器中找对应的组件：getBean(BookDao.class)：  
+(1) 找到一个，赋值  
+(2) 没有找到，抛异常  
+(3) 找到多个(会将此类的子类也找到)：  
+将变量名(bookDao)作为id继续去容器中找对应的组件：
+i. 匹配成功，装配  ii. 匹配失败，报错   
+注意：
+(1)@Autowired  
+@Qualifier(限定词)(“xxx”) //使用此注解可以使用xxx作为id去匹配，而不是使用变量名(原程序的变量bookDao)作为id;  
+(2) 匹配到则装配，匹配不到则赋null值：@Autowired(required=false)  
+### 在方法上使用@Autowired  
+1、这个方法会在bean创建的时候自动运行  
+2、这个方法的每个参数都会按照上述自动注入值(参数的赋值会在ioc的容器中找寻相应组件)  
+代码实现：  
+1、BookService中的方法  
+```java
+    //BookService与BookDao均已注册到ioc容器中
+    @Service
+    public class BookService {
+       @Autowired(required=false)
+       //参数的位置也可以使用@Qualifier注解
+       public void method(@Qualifier("bookDao")BookDao bookDao) {
+           System.out.println(bookDao); 
+       }
+    }
+```  
+2、测试  
+```java  
+  @Test
+   public void test() {
+       ApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
+       //运行后输出：com.qizegao.test.BookDao@2bbaf4f0
+   }
+```
+### @Autowired与@Resource的区别
+@Autowired：是Spring定义的注解，功能最强大，但只支持Spring框架  
+@Resource：是Java定义的标准，扩展性强，在非spring的容器中也可以使用   
+
+### 泛型依赖的注入  
+注册一个组件时，它的泛型也是参考标准(带上泛型去找ioc的相应组件)，如下：    
+![result](https://static01.imgkr.com/temp/6f30866c9a514b7d9b0d1cc9669d87f6.png)  
+
+### Spring的单元测试  
+1、引入依赖(Spring-test)  
+2、在测试类之上使用两个注解：
+① @ContextConfiguration(locations=“classpath:ioc.xml”)
+指定Spring配置文件的位置  
+② @RunWith(SpringJUnit4ClassRunner.class)
+指定用哪种驱动进行单元测试，默认是Junit  
+(3) 好处：直接在要获取的组件上加注解@Autowired，Spring 会自动装配，无需使用getBean方法获取组件。
+(4) 使用案例：  
+```java
+ @ContextConfiguration(locations="classpath:ioc.xml")
+    @RunWith(SpringJUnit4ClassRunner.class)
+    public class test {
+   
+       @Autowired
+       BookDao bookDao;
+   
+       @Test
+       public void test() {
+           System.out.println(bookDao);
+           //com.qizegao.test.BookDao@62e136d3
+       }
+    }
+```  
+
 ## Spring AOP动态代理的两种实现方法(基于接口的JDK动态代理和基于没有接口的CGLIB动态代理:区别在于代理类实现的是接口还是继承的类)   
-AOP：面向切面编程，将段代码动态的切入到指定方法的指定位置。 
+SpringAOP声明的两种实现方式：1、基于xml的声明实现方式(配置文件xml中配置pointcut, 在java中用编写实际的aspect 类, 针对对切入点进行相关的业务处理。)2、基于注解的声明方式(将写在spring 配置文件中的连接点写到注解里面)。   
+AOP：面向切面编程，将段代码动态的切入到指定方法的指定位置。动态的切入的好处是不写死在业务逻辑方法中，修改方便。  
+AOP的底层原理是动态代理，而且并没有要求被代理类一定实现某一接口。  
+
 
 
