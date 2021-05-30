@@ -650,7 +650,372 @@ i. 匹配成功，装配  ii. 匹配失败，报错
 ## Spring AOP动态代理的两种实现方法(基于接口的JDK动态代理和基于没有接口的CGLIB动态代理:区别在于代理类实现的是接口还是继承的类)   
 SpringAOP声明的两种实现方式：1、基于xml的声明实现方式(配置文件xml中配置pointcut, 在java中用编写实际的aspect 类, 针对对切入点进行相关的业务处理。)2、基于注解的声明方式(将写在spring 配置文件中的连接点写到注解里面)。   
 AOP：面向切面编程，将段代码动态的切入到指定方法的指定位置。动态的切入的好处是不写死在业务逻辑方法中，修改方便。  
-AOP的底层原理是动态代理，而且并没有要求被代理类一定实现某一接口。  
+AOP的底层原理是动态代理，而且并没有要求被代理类一定实现某一接口(言外之意是被代理类也可以是继承自某个类)。   
+### AOP术语  
+![result](https://static01.imgkr.com/temp/cda19e2d83aa4344a81c0635750588dd.png)  
+
+Calculator类中有四个方法，每个方法都有开始、返回、异常、结束四个状态(位置)。  
+目标方法：Calculator类中的四个方法(被切入的方法)。 
+目标类：包含目标方法的类(Calculator类)  
+通知方法：将要切入到目标方法指定位置的方法(在目标方法指定位置执行)。  
+切面类：包含通知方法的类。  
+横切关注点：所有目标方法的同一位置。  
+连接点：某个目标方法的四个位置(开始-结束-异常-返回)都是连接点。  
+切入点：通知方法具体要切入的位置。  
+切入点表达式：根据这个表达式从连接点中选出切入点。
+### AOP使用步骤及实例  
+1、在maven中配置  
+```xml
+<dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>1.8.9</version>
+</dependency>
+```  
+2、写配置(主要是自动注解配置)  
+将目标类(被代理类)和切面类加入到ioc容器中：使用四个注解之一，并在xml中扫描(开启自动组件扫描)：  
+(2) 告诉Spring哪一个是切面类(在类上加注解@Aspect)  
+(3) 告诉Spring切面类中的每个通知方法都是何时何地运  行：  
+① 在通知方法之上加注解告知何时运行：  
+![result](https://static01.imgkr.com/temp/145ffd09388a4bee9b8cc63f5b7ddc89.png)   
+
+② 在上面的注解之后加括号，其中写切入点表达式，告知何地运行：( @After("execution(public int com.mrgao.MyCalculator.*(int, int))"))  
+切入点表达式的写法：
+execution(访问权限符 返回值类型 目标方法的全类名(参数列表))
+切入点表达式中通配符、逻辑运算符的使用：  
+![result](https://static01.imgkr.com/temp/65173c8438b646e085d8cd8b1464bc30.png)  
+
+3、ioc.xml中配置基于注解的aop模式  
+```xml
+   <!--  开启基于注解的AOP功能；aop名称空间-->
+   <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+   <!-- 配置正确后，通知方法、目标方法之前会有小箭头  -->
+```  
+4、代码演示  
+1、定义接口，后序被代理对象实现(也可以不定义)
+```java
+public interface Calculator {
+   
+   public int add(int i, int j);
+   public int sub(int i, int j);
+   public int mul(int i, int j);
+   public int div(int i, int j);
+}
+```  
+2、目标类(被代理的类)  
+```java
+@Component
+//目标类
+public class MyMathCalculator implements Calculator{
+   @Override
+   public int add(int i, int j) {
+       return i + j;
+   }
+   @Override
+   public int sub(int i, int j) {
+       return i - j;
+   }
+   @Override
+   public int mul(int i, int j) {
+       return i * j;
+   }
+   @Override
+   public int div(int i, int j) {
+       return i / j;
+   }
+}
+```  
+3、切面类(内含通知方法)  
+```java
+@Component
+@Aspect
+//切面类
+public class LogUtils {
+   //以下为通知方法
+   
+   //在执行目标方法之前运行
+   @Before("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void start() {
+       System.out.println("方法开始了！");
+   }
+   
+   //目标方法正常执行完之后执行
+   @AfterReturning("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void afterreturn() {
+       System.out.println("正常执行完成！");
+   }
+   
+   //目标方法出现异常之后执行
+   @AfterThrowing("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void afterexception() {
+       System.out.println("出现异常啦！");
+   }
+   
+   //目标方法运行结束之后执行
+   @After("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void after() {
+       System.out.println("整个方法执行完毕！");
+   }
+}
+```  
+4、测试1(通过代理类实现接口的方式即javaJDK的动态代理方式实现代理对象)和2(通过直接继承类的方式，创建代理对象，即CGLIB的方式实现代理)  
+```java
+ @Test
+   public void test1() {
+       
+       //AOP底层是动态代理，ioc容器中保存的是目标类的代理对象(该代理对象的类型与被代理对象相同)
+       //所以使用类型获取代理对象时不能使用MyMathCalculator.class(被代理对象的类型)获取(因为此时容器有两个类型相同的组件，通过类型获取会报错)
+       //应该使用二者唯一可以产生联系的实现的接口获取
+       
+       ApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
+       Calculator calculator = ioc.getBean(Calculator.class);
+       calculator.add(1, 2);
+       /**
+        * 方法开始了！
+        * 整个方法执行完毕！
+        * 正常执行完成！
+        */
+       System.out.println(calculator); //com.qizegao.aop.MyMathCalculator@47eaca72
+       System.out.println(calculator.getClass()); //class com.sun.proxy.$Proxy11
+       //$Proxy是代理对象的类型
+   }     
+
+   @Test
+   //通过id获取目标类的代理对象
+   public void test2() {
+       //代理对象的id默认是目标类的类名首字母小写
+       Calculator calculator = (Calculator)ioc.getBean("myMathCalculator");
+       System.out.println(calculator.getClass()); //class com.sun.proxy.$Proxy11
+   }
+```
+2、即使被代理对象(目标类)没有实现任何接口，Spring也可为其创建对象，演示如下：  
+```java
+ @Test
+   public void test1() {   
+       //如果没有实现任何接口，通过类型获取代理对象时使用的就是本类类型
+       MyMathCalculator mymathCalculator =  ioc.getBean(MyMathCalculator.class);
+       mymathCalculator.add(1, 2);
+       /**
+        * 方法开始了！
+        * 整个方法执行完毕！
+        * 正常执行完成！
+        */
+       System.out.println(mymathCalculator.getClass());
+       //class com.qizegao.aop.MyMathCalculator$$EnhancerByCGLIB$$acfb5ca0
+       //没有实现接口时获取到的代理对象是由CGLIB(一个组织)创建
+   }
+
+   @Test
+   public void test2() {
+       
+       //如果没有实现任何接口，通过id获取代理对象时使用的就是本类类型对应的id值
+       MyMathCalculator myMathCalculator = (MyMathCalculator)ioc.getBean("myMathCalculator");
+       System.out.println(myMathCalculator.getClass());
+       //class com.qizegao.aop.MyMathCalculator$$EnhancerByCGLIB$$acfb5ca0
+   }
+```  
+5、通知方法的执行顺序(名词字数逐渐变多)  
+![result](https://static01.imgkr.com/temp/64c1f34c92d1487ab53d2a5068433339.png)  
+
+### 使用JointPoint获取目标方法的详细信息  
+1、在切面类的通知方法  
+```java
+  /**
+    * 可以在通知方法中获取目标方法的详细信息
+    * 只需要在通知方法的参数列表上添加一个JoinPoint类型的参数
+    * JoinPoint：封装了当前目标方法的详细信息
+    */   
+   //在执行目标方法之前运行
+   @Before("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void start(JoinPoint joinPoint) {
+       //获取到目标方法使用的参数
+       Object[] args = joinPoint.getArgs();
+       System.out.println("目标方法使用的参数是：" + Arrays.asList(args));
+       //获取到目标方法的签名
+       org.aspectj.lang.Signature signature = joinPoint.getSignature();
+       //获取目标方法的方法名
+       String name = signature.getName();
+       System.out.println("目标方法的方法名是：" + name);
+   }
+```  
+2、测试  
+```java
+@Test
+   public void test() {
+       MyMathCalculator bean = ioc.getBean(MyMathCalculator.class);
+       bean.add(1, 2);
+       /**
+        * 目标方法使用的参数是：[1, 2]
+        * 目标方法的方法名是：add
+        */
+   }
+```  
+### 获取目标方法的返回值  
+1、在切面类的方法中  
+```java
+ /**
+    * 获取目标方法的返回值：
+    * 在通知方法的参数中加返回值类型的参数
+    * 在注解中说明此参数是用来做什么的(只有在@AfterReturning注解中才有returning)：
+    * returning = "参数名"
+    * 表示此参数是用来接收目标方法的返回值的
+    *
+    * 注：切入点表达式是注解中的value属性值
+    */
+   
+   //目标方法正常执行完之后执行
+   @AfterReturning(value="execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))", returning="obj")
+   public static void afterreturn(JoinPoint joinPoint, Object obj) {
+       System.out.println("目标方法的参数是：" + Arrays.asList(joinPoint.getArgs()));
+       System.out.println("目标方法的返回值是：" + obj);
+   }
+```  
+2、测试  
+```java
+@Test
+   public void test() {
+       MyMathCalculator bean = ioc.getBean(MyMathCalculator.class);
+       bean.add(1, 2);
+       /**
+        * 目标方法开始执行了
+        * 整个方法执行完毕！
+        * 目标方法的参数是：[1, 2]
+        * 目标方法的返回值是：3
+        */
+   }
+```  
+### 获取目标方法的异常信息  
+用法与获取目标方法的返回值类似，只是只有在@AfterThrowing注解中才能使用：
+throwing = “异常类型的参数名”  
+### 可重用的切入点表达式(在目标类的那个目标方法进行切入)  
+可重用的切入点表达式：修改切入点表达式时需要去每个通知方法的切入点表达式一个一个的去修改，如果将这些通知方法的切入点表达式抽取出来，别的通知方法都来引用，则修改一处即可使所有通知方法的切入点表达式都修改。  
+1、使用步骤：    
+(1) 随便声明一个方法体中没有任何内容的返回值为void的空方法   
+(2) 给声明的此方法加注解@Pointcut(“抽取的切入点表达式”)(@Pointcut("execution(public int com.mrgao.MyCalculator.*(int, int))"))  
+(3) 在其余通知方法原来使用切入点表达式的地方修改为此方法名  
+2、代码演示：  
+```java
+    @Pointcut("execution(public int com.mrgao.MyCalculator.*(int, int))")
+    public void myPointCut(){};
+
+    @Before("myPointCut()")
+    public void start(JoinPoint joinPoint){
+        Object[] arg = joinPoint.getArgs();
+        System.out.println(Arrays.asList(arg));
+        Signature signature = joinPoint.getSignature();
+        System.out.println(signature.getName());
+    }
+```    
+### 环绕通知  
+以上四种通知方法结合在一起就是环绕通知。  
+环绕通知的通知方法中有一个ProceedingJoinPoint类型的参数，ProceedingJoinPoint接口继承于 JoinPoint接口，有一个返回Object类型的proceed(Object[] args)方法，相当于动态代理中的 method.invoke方法，用来执行目标方法，参数是目标方法的参数列表。  
+代码演示:  
+```java
+ @Around("execution(public int com.qizegao.aop.MyMathCalculator.add(int, int))")
+   public Object myAround(ProceedingJoinPoint pjp) throws Throwable {
+       Object[] args = pjp.getArgs();
+       Object proceed = null; //记录目标方法的返回值
+       try {
+          System.out.println("环绕通知的@Before执行");
+          
+          proceed = pjp.proceed(args); //method.invoke();
+          
+          System.out.println("环绕通知的@AfterReturning执行");
+       } catch (Exception e) {
+          System.out.println("环绕通知的@AfterThrowing执行");
+       } finally {
+          System.out.println("环绕通知的@After执行");
+       }
+       System.out.println("目标方法的返回值是:" + proceed);
+       return proceed; //返回目标方法的返回值
+   }
+
+   @Test
+   public void test() {
+       MyMathCalculator bean = ioc.getBean(MyMathCalculator.class);
+       bean.add(1, 2);
+   }
+```
+### 五种方法都是用的执行顺序  
+![result](https://static01.imgkr.com/temp/5e35f08170ec4e0fae5a1e8dd4e6dec8.png) 
+
+由于环绕通知的@AfterThrowing会先执行，故出现异常如果环绕通知将其catch掉，则普通的@AfterThrowing将检测不到这个异常，故需要在环绕通知方法的@AfterThrowing中将此异常抛出去，方便普通@AfterThrowing也可检测到此异常
+可以看出环绕通知比其余通知先执行  
+### 环绕通知与其余四个通知的不同  
+1、环绕通知比其他通知先执行。
+2、其余四个通知都是简单的通知方法，不可以对目标方法进行修改  
+3、环绕通知可以修改目标方法的参数(获取到之后可以在通知方法中修改)，也可以修改目标方法的 返回值(直接修改通知方法中return语句的返回值)    
+### 多个切面类的运行顺序  
+使用@Order注解指定切面类的运行顺序，注解中是int型的数字，数字越小越先执行；如果没有使用@Order注解，则切面类的执行顺序由类名按字母排序的大小决定  
+代码演示：
+```java
+@Component
+@Aspect
+@Order(1)
+public class class1 {
+   //在执行目标方法之前运行
+   @Before("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void start() {
+       System.out.println("class1的普通@Before执行");
+   }
+   
+   //目标方法正常执行完之后执行
+   @AfterReturning("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void afterreturn() {
+       System.out.println("class1的普通@AfterReturning / @AfterThrowing执行");
+   }
+   
+   //目标方法出现异常之后执行
+   @AfterThrowing("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void afterexception() {
+       System.out.println("class1的普通@AfterThrowing执行");
+   }
+}
+
+
+@Aspect
+@Component
+@Order(2)
+public class class2 {
+   //在执行目标方法之前运行
+   @Before("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void start() {
+       System.out.println("class2的普通@Before执行");
+   }
+   
+   //目标方法正常执行完之后执行
+   @AfterReturning("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void afterreturn() {
+       System.out.println("class2的普通@AfterReturning / @AfterThrowing执行");
+   }
+   
+   //目标方法出现异常之后执行
+   @AfterThrowing("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void afterexception() {
+       System.out.println("class2的普通@AfterThrowing执行");
+   }
+   
+   //目标方法运行结束之后执行
+   @After("execution(public int com.qizegao.aop.MyMathCalculator.*(int, int))")
+   public static void after() {
+       System.out.println("class2的普通@After执行");
+   }
+}
+```  
+测试：  
+![result](https://static01.imgkr.com/temp/2fac868b898b46aa90201c18e4684322.png)  
+
+原理：  
+![result](https://static01.imgkr.com/temp/bcb9b5f75688455f8f34002561cbb166.png)  
+
+在切面类加上环绕通知后的执行顺序：  
+![result](https://static01.imgkr.com/temp/1d2662b11e0b4afe8749bf5ac2f1048d.png)  
+
+
+
+
+
+
 
 
 
