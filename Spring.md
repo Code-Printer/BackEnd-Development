@@ -459,7 +459,6 @@ public void test1() {
         ApplicationContext ioc = new ClassPathXmlApplicationContext("ioc.xml");
         DataSource dataSource = (DataSource)ioc.getBean("dataSource");
         System.out.println(dataSource.getConnection());
-        //com.mchange.v2.c3p0.impl.NewProxyConnection@64c87930
     }
 ```   
 ### 通过注解式创建bean对象  
@@ -544,7 +543,7 @@ ii. 可以修改组件为多实例，如下：
         <context:include-filter type="assignable" expression="com.qizegao.test.BookService"/>
    </context:component-scan>
 ```  
-### 使用@Autowired注解给属性赋值：根据类型实现自动装配  
+### 使用@Autowired注解给在容器中配置组件的类的类型属性赋值：根据类型实现自动装配  
 自动装配：自动的为某个属性赋值，一定是去容器中找这个属性对应的组件(以该属性的类型在容器中寻找对应的属性组件)赋值，也就要求此组件 必须在容器中，否则报错。  
 代码演示
 1、在包下创建两个类，使用注解对两个类进行注释  
