@@ -1,4 +1,5 @@
 # Spring  
+### 配置与注解的异同：注解开发更加简便，配置功能更加完善，重要用配置，不重要用注解 
 ## IOC概述  
 IOC：(inversion of Control)，控制反转，是一个(类、对象)管理的容器。  
 容器:管理所有的组件(类、对象等，程序中表示为bean)，使用类时不需要去new对象实例化，而是由容器创建和管理类，使用组件时直接通过容器获取即可。(直接可以通过IOC的getBean()方法实例化类的对象)  
@@ -1009,7 +1010,49 @@ public class class2 {
 ![result](https://static01.imgkr.com/temp/bcb9b5f75688455f8f34002561cbb166.png)  
 
 在切面类加上环绕通知后的执行顺序：  
-![result](https://static01.imgkr.com/temp/1d2662b11e0b4afe8749bf5ac2f1048d.png)  
+![result](https://static01.imgkr.com/temp/1d2662b11e0b4afe8749bf5ac2f1048d.png)    
+
+### 使用在xml中配置AOP(不使用注解)  
+```xml
+<!--  1. 将目标类和切面类都加入到ioc容器中-->
+   <!-- 目标类 -->
+   <bean id="myMathCalculator" class="com.atguigu.impl.MyMathCalculator"></bean>
+   <!-- 两个切面类 -->
+   <bean id="BValidateApsect" class="com.atguigu.utils.BValidateApsect"></bean>
+   <bean id="logUtils" class="com.atguigu.utils.LogUtils"></bean>
+   
+   <!-- 使用AOP名称空间 -->
+   <aop:config>
+       <!-- 可重用的切入点表达式 -->
+       <aop:pointcut id="globalPoint" expression="execution(* com.atguigu.impl.*.*(..))"/>
+   
+       <!-- 2. 告诉Spring哪一个是切面类，并且指定切面类执行的先后顺序 -->
+       <aop:aspect ref="logUtils" order="1">
+          
+          <!-- 3、在切面类中使用五个通知注解来配置切面中的这些通知方法都何时何地运行 -->
+          <!--
+             (1) method属性指明某个通知方法在何时运行，写方法名
+             (2) pointcut属性指明切入点表达式
+             (3) pointcut - ref属性指明使用哪个可重用的切入点表达式
+             (4) 注意有两个注解中可以使用returning、throwing属性指明通知方法的某一参数是用来做什么的，写通知方法的参数名
+           -->
+          <aop:before method="logStart" pointcut="execution(* com.atguigu.impl.*.*(..))"/>
+          <aop:after-returning method="logReturn" pointcut-ref="globalPoint" returning="result"/>
+          <aop:after-throwing method="logException" pointcut-ref="globalPoint" throwing="exception"/>
+          <aop:after method="logEnd" pointcut-ref="globalPoint"/>
+          <aop:around method="myaround" pointcut-ref="globalPoint"/>
+       </aop:aspect>
+   
+       <!-- 另一个切面类 -->
+       <aop:aspect ref="BValidateApsect" order="2">
+          <aop:before method="logStart" pointcut-ref="globalPoint"/>
+          <aop:after-returning method="logReturn" pointcut-ref="globalPoint" returning="result"/>
+          <aop:after-throwing method="logException" pointcut-ref="globalPoint" throwing="exception"/>
+          <aop:after method="logEnd" pointcut-ref="globalPoint"/>
+       </aop:aspect>
+   </aop:config>
+```  
+
 
 
 
