@@ -176,7 +176,7 @@ public static void main(String[] args) {
 2.抽取一个方法获取连接对象  
 3.抽取一个方法释放资源  
 代码演示：使用JDBCUtils对Order表进行查询，结果放入集合中，并返回集合  
-1、创建一个Order类(存放的是查询的对象)  
+1、创建一个Order类(存放的是查询的对象)，<font color='white'>查询时成员变量名任意，但set、get方法名必须与数据库表的对应字段名相同，否则会填充不上。</font>    
 ```java
 public class Order {
     //一个类代表一张表，类中的属性代表一列，一个对象代表一行(ORM编程思想)
