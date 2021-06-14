@@ -165,3 +165,242 @@ public class UserMapperTest {
 }
 运行结果：成功获取到数据
 ```  
+### 使用MyBatis完成CRUD  
+1、查询  
+```java
+//UserMapper接口中添加方法
+User getUserById(int id);
+
+
+<!-- UserMapper.xml的mapper标签中添加标签 -->
+<!-- parameterType属性表示id属性对应的方法参数的类型 -->
+<select id="getUserById" parameterType="int" resultType="com.qizegao.pojo.User">
+    select * from user where id = #{id}
+</select>
+
+//测试类中添加
+@Test
+public void test2() {
+    SqlSession sqlSession = MybatisUtils.getSqlSession();
+    UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+    User user = userMapper.getUserById(1);
+    System.out.println(user);
+    //User{id=1, name='周杰伦', pwd='123456'}
+    sqlSession.close();
+}
+```  
+2、插入  
+```java
+//UserMapper接口中添加方法
+int addUser(User user);
+
+<!-- UserMapper.xml的mapper标签中添加标签 -->
+<insert id="addUser" parameterType="com.qizegao.pojo.User">
+    <!-- 对象中的属性可以通过#{}直接提取出来 -->
+    insert into mybatis.user (id, name, pwd) values (#{id},#{name},#{pwd});
+</insert>
+
+@Test
+public void test2() {
+    SqlSession sqlSession = MybatisUtils.getSqlSession();
+    UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+    int res = userMapper.addUser(new User(7, "黎明", "33445566"));
+    System.out.println("受影响的行数：" + res);//受影响的行数：1
+    sqlSession.commit(); //增删改需要提交事务
+    sqlSession.close();
+}
+```  
+3、删除  
+```java
+//UserMapper类中添加方法
+int deleteUser(int id);
+
+<!-- UserMapper.xml的mapper标签中添加标签 -->
+<delete id="deleteUser" parameterType="int">
+    delete from user where id=#{id}
+</delete>
+
+public void test2() {
+    SqlSession sqlSession = MybatisUtils.getSqlSession();
+    UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+    int i = mapper.deleteUser(7);
+    System.out.println("受影响的行数：" + i); //受影响的行数：1
+    sqlSession.commit(); //增删改需要提交事务
+    sqlSession.close();
+}
+```  
+4、修改  
+```java
+//UserMapper类中添加方法
+int updateUser(User user);
+
+<!-- UserMapper.xml的mapper标签中添加标签 -->
+<update id="updateUser" parameterType="com.qizegao.pojo.User">
+    update user set name=#{name}, pwd=#{pwd} where id=#{id}
+</update>
+
+@Test
+public void test2() {
+    SqlSession sqlSession = MybatisUtils.getSqlSession();
+    UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+    int i = mapper.updateUser(new User(7, "蔡虚坤", "78956"));
+    System.out.println("受影响的行数:" + i); //受影响的行数:1
+    sqlSession.commit(); //增删改需要提交事务
+    sqlSession.close();
+}
+```  
+### MyBatis配置解析
+在MyBatis的核心配置文件mybatis.xml (任意起名)的configuration标签中写配置
+1. 环境变量 (environments)  
+MyBatis配置文件中可以配置多种环境，使用environment标签声明，但只可以选择其中一种环境，通过environments标签的default属性决定使用哪一种环境  
+2. 事务管理器 (transactionManager)
+默认使用JDBC，其余可去中文文档查看
+3. 数据源 (dataSource)
+默认使用POOLED，其余可去中文文档查看
+```xml
+<configuration>
+    <!-- 以下配置了两个环境，default标签中写某一环境的id属性值从而去使用它 -->
+    <environments default="development">
+        <environment id="development"> <!-- id属性给此环境起一个名称 -->
+            <transactionManager type="JDBC"/> <!-- 默认 -->
+            <dataSource type="POOLED"> <!-- 默认 -->
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/mybatis"/>
+                <property name="username" value="root"/>
+                <property name="password" value="root"/>
+            </dataSource>
+        </environment>
+
+        <!-- 第二个环境 -->
+        <environment id="newEnvironment">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/mybatis"/>
+                <property name="username" value="root"/>
+                <property name="password" value="root"/>
+            </dataSource>
+        </environment>
+    </environments>   
+</configuration>
+```  
+4、配置数据库连接 (properties文件)  
+可以使用properties标签引用外部配置文件  
+(1) src/main/resources目录下创建一个配置文件db.properties
+```properties
+driver=com.mysql.jdbc.Driver
+url=jdbc:mysql://localhost:3306/test?useSSL=false&useUnicode=true&characterEncoding=UTF-8
+root=root
+password=234414
+```  
+(2)mybatis.xml中编写  
+```xml
+<configuration>
+
+    <properties resource="db.properties">
+        <!-- properties标签中也可以声明key - value，与外部配置文件配合使用 -->
+        <property name="username" value="root"/>
+        <property name="password" value="234414"/>
+    </properties>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <!-- xml文件中 "&" 需要转义成为 "&amp;" -->
+                <property name="url" value="${url}"/>
+                <property name="username" value="${root}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="com.mrgao.dao/UserMapper.xml" />
+    </mappers>
+</configuration>
+```  
+注意：mybatis.xml文件中congratulation标签中的标签声明有顺序要求   
+![result](https://static01.imgkr.com/temp/4ad871b36b464adaa84804533cb8db8c.png)  
+
+### 给类类型起别名  
+类类型别名存在的意义是减少配置时需要填写全类名的冗余，用法有两种 (在配置文件mybatis.xml中)  
+(1) 给全类名起别名  
+```xml
+<typeAliases>
+    <!-- 以后在Mapper.xml中使用此类型时无需再写全类名，直接写User即可 -->
+    <typeAlias type="com.qizegao.pojo.User" alias="User"/>
+</typeAliases>
+```  
+（2）扫描指定包下的类，某一类的别名默认是类名首字母小写  
+```xml
+<typeAliases>
+    <!-- 此包下的User类的别名成为user -->
+    <package name="com.qizegao.pojo"/>
+</typeAliases>
+```  
+注意：可以在对应的类上加注解@Alias(“xxx”)，则类名的别名成为指定的xxx  
+### 映射器 (mappers)
+用来注册绑定的Mapper.xml文件，有三种方式。每个Mapper.xml文件都需要在MyBatis.xml的核心配置文件中注册  
+(1) 使用mapper标签中的resources属性  
+```xml
+<mappers>
+    <mapper resource="com/qizegao/dao/UserMapper.xml"></mapper>
+</mappers>  
+```  
+（2）使用mapper标签中的class属性
+```xml
+<mappers>
+    <!-- class属性中写Mapper.xml文件绑定的Mapper接口 -->
+    <mapper class="com.qizegao.dao.UserMapper"></mapper>
+    <!--
+        1. 接口和其Mapper.xml配置文件必须同名
+        2. 接口和其Mapper.xml配置文件必须在同一个包下
+    -->
+</mappers>
+```  
+（3） 使用package标签
+```xml
+<mappers>
+    <!-- package标签可以扫描指定包下的Mapper.xml文件 -->
+    <package name="com.qizegao.dao"/>
+    <!--
+        1. 接口和其Mapper.xml配置文件必须同名
+        2. 接口和其Mapper.xml配置文件必须在同一个包下
+    -->
+</mappers>
+```
+### MyBatis的生命周期和作用域  
+![result](https://static01.imgkr.com/temp/934b9c6af6e14ddc8ed768a06b3e38e8.png)  
+1、SqlSessionFactoryBuilder
+使用其创建了SqlSessionFactory之后，就不再需要它了  
+2、SqlSessionFactory
+(1) 可以理解为数据库连接池  
+(2) 它一旦被创建就应该在运行期间一直存在，没有理由丢弃它或重新创建另一个实例  
+3、SqlSession
+(1) 可以理解为是连接到连接池的一个请求  
+(2) 它的实例不是线程安全的，因此不能被共享  
+(3) 使用完之后应该关闭，防止资源被占用  
+### 日志工厂（打日志发现操作数据库时，底层自动开启事务和关闭事务autoCommit）  
+一个数据库操作出现了异常，使用日志是最好的排错助手  
+在mybatis.xml中的configuration标签中使用settings标签指明使用哪一种日志实现
+常见的日志实现有两种：
+(1) STDOUT_LOGGING (标准日志输出)
+i. 配置文件中声明  
+```xml
+<settings>
+    <setting name="logImpl" value="STDOUT_LOGGING"/>
+</settings>
+```  
+(2) LOG4J的使用自行网上搜索  
+### 八、其他注意点
+1、\${}和#{}的区别  
+MyBatis有两种取值方式：  
+(1) #{属性名}：是预编译的方式，参数的位置都使用?替代，参数值都是预编译设置进去的；
+比较安全，不会有sql注入问题  
+(2) \${属性名}：直接和sql语句拼串，不安全
+一般都使用#{}，在不支持预编译的位置要进行取值才使用${}
+2、查询结果是Map类型
+(1) 查询结果是一项封装成为一个Map对象时，resultType属性值为 ”map”  
+(2) 查询结果是多项封装成为一个Map对象时，需要在Mapper接口的方法上使用注解
+@MapKey(“xxx”)，将查询结果的xxx列作为key封装这个map，resultType属性值为value对应的类型(不再是map)  
