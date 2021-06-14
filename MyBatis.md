@@ -403,4 +403,152 @@ MyBatis有两种取值方式：
 2、查询结果是Map类型
 (1) 查询结果是一项封装成为一个Map对象时，resultType属性值为 ”map”  
 (2) 查询结果是多项封装成为一个Map对象时，需要在Mapper接口的方法上使用注解
-@MapKey(“xxx”)，将查询结果的xxx列作为key封装这个map，resultType属性值为value对应的类型(不再是map)  
+@MapKey(“xxx”)，将查询结果的xxx列作为key封装这个map，resultType属性值为value对应的类型(不再是map)    
+### 使用注解进行开发(在对应的dao层逻辑操作类的方法上写注解进行操作)  
+1、注解使用在Mapper接口的方法上，无需再使用UserMapper.xml文件  
+```java
+public interface UserMapper {
+    
+    @Select("select * from user limit #{startIndex}, #{pageSize}")  //这里必须用map数据结构进行填充
+    List<User> getUserListById(Map<String, Integer> map);
+
+}
+```  
+2、需要在核心配置文件mybatis.xml中绑定接口  
+```xml
+<mappers>
+    <mapper class="com.qizegao.dao.UserMapper"/>
+</mappers>
+```    
+3、测试  
+```java
+@Test
+public void test01() {
+    SqlSession sqlSession = MyBatisUtils.getSqlSession();
+    UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+
+    //向map参数中赋值
+    HashMap<String, Integer> map = new HashMap<String, Integer>();
+    map.put("startIndex", 0);
+    map.put("pageSize", 2);
+
+    List<User> userListById = userMapper.getUserListById(map);
+    sqlSession.close();
+}
+```
+### 使用注解完成删除操作  
+1、Mapper接口中添加注解  
+```java
+public interface UserMapper {
+    @Delete("delete from user where id = #{uid}")
+    int deleteUser(@Param("uid") int id);
+
+    /**
+     * 1. 方法上的注解还有@Insert()、@Update()两种，分别完成对应的操作
+     * 2. 方法中的参数使用@Param注解表示给参数名起别名
+     *
+     * 注意： (1)参数有多个基本类型和String类型时需要使用@Param注解
+     *       (2)参数如果只有一个基本类型时，可以不使用@Param注解，但尽量使用
+     *       (3)类类型不需要使用@Param注解
+     *
+     */
+
+}
+```  
+2、需要在核心配置文件mybatis.xml中绑定接口  
+```xml
+<mappers>
+    <mapper class="com.qizegao.dao.UserMapper"/>
+</mappers>
+```  
+3、测试
+```java
+public static SqlSession getSqlSession() {
+    //可以在上面的MyBatisUtils工具类中设置sqlSession为自动提交，打开事务
+    return sqlSessionFactory.openSession(true);
+}
+```
+```java
+@Test
+public void test01() {
+    SqlSession sqlSession = MyBatisUtils.getSqlSession();
+    UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+    int res = userMapper.deleteUser(3);
+    //已经在工具类中设置为自动提交，故此处无需提交事务
+    sqlSession.close();
+}
+```  
+### 联合查询
+有两张表t_key和t_lock，对应关系如下所示：  
+![result](https://static01.imgkr.com/temp/a44e8d6a1a9145158871914f1197d3cf.png)  
+
+1、级联属性的方式  
+ (1)Key类和Lock类  
+ ![result](https://static01.imgkr.com/temp/754edcce2614458a82f9ed57823810d6.png)  
+(2)KeyMapper接口中声明  
+```java
+public Key getKeyById(Integer id);
+```  
+(3) KeyMapper.xml中编写  
+```xml
+ 	<select id="getKeyById" resultMap="mykey">
+ 		select k.id, k.`keyname`, k.`lockid`, l.`id` lid, l.`lockName` 
+		from t_key k
+		left join t_lock l on k.`lockid`=l.`id`
+		where k.`id`=#{id}
+ 	</select>
+
+  	<resultMap id="mykey" type="com.qizegao.bean.Key" >
+ 		<id property="id" column="id"/>
+ 		<result property="keyName" column="keyname"/>
+ 		<result property="lock.id" column="lid"/>
+ 		<result property="lock.lockName" column="lockName"/>
+ 	</resultMap> 
+```  
+2. 使用association标签的方式
+KeyMapper.xml中编写 (select标签的内容与上述一致)  
+```xml
+ 	<resultMap id="mykey" type="com.qizegao.bean.Key" >
+ 		<id property="id" column="id"/>
+ 		<result property="keyName" column="keyname"/>
+ 		<!-- 使用association标签表示联合了一个对象 -->
+ 		<!-- javaType属性指定联合的对象类型 -->
+ 		<association property="lock" javaType="com.qizegao.bean.Lock">
+ 			<!-- 定义如何封装lock对象，property属性表示的是lock对象的属性 -->
+ 			<id property="id" column="lid"/>
+ 			<result property="lockName" column="lockName"/>
+ 		</association>
+ 	</resultMap>
+```  
+3. 使用collection标签的方式  
+(1) Key类和Lock类  
+![result](https://static01.imgkr.com/temp/a9f3f28ca94549beb8370cdfc02ec711.png)  
+
+(2)LockMapper接口中声明(当查询的成员变量需求结果为一个集合时)
+```java
+public Lock getLockById(Integer id);
+```  
+(3) LockMapper.xml中声明  
+```xml
+ 	<select id="getLockById" resultMap="mylock">
+ 		select l.*,k.id kid,k.`keyname`,k.`lockid` 
+ 		from t_lock l 
+		left join t_key k on l.`id`=k.`lockid`
+		where l.id=#{id}
+ 	</select>
+
+ 	<resultMap id="mylock" type="com.atguigu.bean.Lock">
+ 		<id property="id" column="id"/>
+ 		<result property="lockName" column="lockName"/>
+ 		<!-- 
+ 			使用collection标签表示联合了一个集合
+ 			ofType属性指定集合里面元素的类型
+ 		-->
+ 		<collection property="keys" ofType="com.atguigu.bean.Key">
+ 			<!-- 定义集合中的封装规则，property属性表示的是Key类中的属性 -->
+ 			<id property="id" column="kid"/>
+ 			<result property="keyName" column="keyname"/>
+ 		</collection>
+ 	</resultMap>
+
+```
