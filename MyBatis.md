@@ -55,7 +55,7 @@ mybatis是持久层的一个框架，不用写jdbc复杂的编码过程(直接�
     </resources>
 </build>
 ```  
-2、工程的src/main/resources/目录下右键new → File；创建MyBatis的核心配置文件mybatis-config.xml (可任意起名)  
+2、工程的src/main/resources/目录下右键new → File；创建MyBatis的核心配置文件mybatis.xml (可任意起名)  
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE configuration
@@ -393,7 +393,7 @@ i. 配置文件中声明
 </settings>
 ```  
 (2) LOG4J的使用自行网上搜索  
-### 八、其他注意点
+### 其他注意点
 1、\${}和#{}的区别  
 MyBatis有两种取值方式：  
 (1) #{属性名}：是预编译的方式，参数的位置都使用?替代，参数值都是预编译设置进去的；
@@ -522,6 +522,7 @@ KeyMapper.xml中编写 (select标签的内容与上述一致)
 ```  
 3. 使用collection标签的方式  
 (1) Key类和Lock类  
+
 ![result](https://static01.imgkr.com/temp/a9f3f28ca94549beb8370cdfc02ec711.png)  
 
 (2)LockMapper接口中声明(当查询的成员变量需求结果为一个集合时)
@@ -550,5 +551,188 @@ public Lock getLockById(Integer id);
  			<result property="keyName" column="keyname"/>
  		</collection>
  	</resultMap>
+```  
+### 动态sql  
+1、创建一张数据库表t_teacher  
+![result](https://static01.imgkr.com/temp/a733c50d44c24216826a6cb133d003c6.png)  
 
+2、创建Teacher类  
+```java
+public class Teacher {
+
+	private Integer id;
+	private String name;
+	private String course;
+	private String address;
+	private Date birth;
+	//以及其余JavaBean结构(set、get、toString)
+	
+}
+```  
+3、TeacherMapper
+```java
+public List<Teacher> getTeacherByCondition(Teacher teacher);
+```
+4、TeacherMapper.xml中编写操作数据库操作  
+```xml
+	<resultMap id="teacherMap" type="com.qizegao.bean.Teacher">
+		<id property="id" column="id" />
+		<result property="address" column="address" />
+		<result property="birth" column="birth_date" />
+		<result property="course" column="class_name" />
+		<result property="name" column="teacherName" />
+	</resultMap>
+	
+	<select id="getTeacherByCondition" resultMap="teacherMap">
+		
+			select * from t_teacher
+		
+		<!-- trim标签用来截取字符串：
+		
+				(1) prefix属性为sql语句整体添加一个前后缀，一般设置为where，
+				当没有条件符合where时，会自动去掉where前缀
+				    
+				(2) prefixOverrides属性去除每个if标签中指定的前缀，一般设置为and
+					当某个and后面的条件不满足时，自动去掉and前缀
+					
+				(3) suffix和suffixOverrides属性使用与上述类似  		
+		 -->
+
+		<trim prefix="where" prefixOverrides="and">
+		
+			<!-- if标签的test属性写判断条件，
+			     当满足判断条件时就将if标签体中的sql语句拼接到if标签体外的sql语句上
+			     如 "id != null" 表示传入的JavaBean的id属性值不为null时才满足条件
+		    -->
+		
+			<if test="id!=null">
+				id > #{id}
+			</if>
+
+			<!-- &amp;表示&，&quot;表示" -->
+			<if test="name!=null &amp;&amp; !name.equals(&quot;&quot;)">
+				and teacherName like #{name} 
+			</if>
+			
+			<if test="birth!=null">
+			    <!-- &lt;表示< -->
+				and birth_date &lt; #{birth} 
+			</if>
+		</trim>
+	</select>
+```    
+5、测试类中编写  
+```java
+public class TeacherDaoTest {
+    @Test
+    public void test1(){
+        SqlSession sqlSession = MyBatisUtils.getSqlSession();
+        TeacherDao userMapper = sqlSession.getMapper(TeacherDao.class);
+        Teacher teacher = new Teacher(2,"","","",null);//在此测试用例中设置id不为null，name不为null，birth为null
+        List<Teacher> list = userMapper.getTeacherByCondition(teacher);
+        System.out.println(list);
+    }
+
+}
+```   
+### 动态sql的其他标签  
+1. foreach标签（在数据库操作的in语句可以使用）将集合中的数据一个一个取出来对比  
+(1) TeacherMapper中编写  
+```java
+public List<Teacher> getTeacherByIdIn(@Param("ids")List<Integer> ids);
+```  
+(2) TeacherMapper.xml中编写  
+```xml
+	<select id="getTeacherByIdIn" resultMap="teacherMap">
+		
+		SELECT * FROM t_teacher WHERE id IN
+		
+		<!-- foreach标签用来遍历集合
+				1. collection属性指定要遍历的集合 
+				2. item属性为每次遍历出的元素起一个变量名
+				3. separator属性定义遍历到的元素的分隔符
+				4. open属性定义foreach标签中的sql语句以什么开始
+				5. close属性定义foreach标签中的sql语句以什么结束
+				6. index属性表示索引：
+					(1) 如果遍历的是一个list: 
+							index：指定的变量保存了当前索引 
+							item：保存当前遍历的元素的值 
+					(2) 如果遍历的是一个map： 
+							index：指定的变量保存了当前遍历的元素的key 
+							item：保存当前遍历的元素的值
+		-->
+		
+		<if test="ids.size >0">
+			<foreach collection="ids" item="id_item" separator="," open="("
+				close=")">
+				#{id_item} <!-- 取出遍历的元素的值 -->
+			</foreach>
+		</if>
+	</select>
+```
+2. choose标签   
+（1）TeacherDao中编写
+```java
+public List<Teacher> getTeacherByConditionChoose(Teacher teacher);
+```  
+(2) TeacherDao.xml中编写  
+```xml
+	<select id="getTeacherByConditionChoose" resultMap="teacherMap">
+		select * from t_teacher
+		
+		<!-- sql语句不写where，使用where标签 -->
+		
+		<where> <!-- 相当于在sql语句补了一个where，且自动去除and或or -->
+
+			<!-- choose标签是从上向下判断，
+				 一旦满足了when条件，就将when标签中的sql语句添加到原sql语句后面
+				 一旦满足了一个when标签就不会去判断其余的when标签，跳出choose标签
+			 -->
+			
+			<choose>
+				<when test="id!=null">
+					id=#{id}
+				</when>
+				<when test="name!=null and !name.equals(&quot;&quot;)">
+					teacherName=#{name}
+				</when>
+				<when test="birth!=null">
+					birth_date = #{birth}
+				</when>
+				<otherwise>
+					1=1 <!-- 永远为true -->
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+```  
+3. set标签（修改操作时使用）  
+(1) TeacherDao中编写  
+```java
+public int updateTeacher(Teacher teacher);
+```  
+(2)TeacherDao.xml中编写  
+```xml
+	<update id="updateTeacher">
+		UPDATE t_teacher
+		
+		<!-- 使用set标签代替sql语句中的set
+			 可以自动的去掉if标签中sql语句后面多余的逗号
+		 -->
+		
+		<set>
+			<if test="name!=null and !name.equals(&quot;&quot;)">
+				teacherName=#{name},
+			</if>
+			<if test="address!=null and !address.equals(&quot;&quot;)">
+				address=#{address},
+			</if>
+			<if test="birth!=null">
+				birth_date=#{birth}
+			</if>
+		</set>
+		<where> <!-- where标签代替sql语句手写where -->
+			id=#{id}
+		</where>
+	</update>
 ```
