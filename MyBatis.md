@@ -374,10 +374,10 @@ password=234414
 ![result](https://static01.imgkr.com/temp/934b9c6af6e14ddc8ed768a06b3e38e8.png)  
 1、SqlSessionFactoryBuilder
 使用其创建了SqlSessionFactory之后，就不再需要它了  
-2、SqlSessionFactory
+2、SqlSessionFactory  
 (1) 可以理解为数据库连接池  
-(2) 它一旦被创建就应该在运行期间一直存在，没有理由丢弃它或重新创建另一个实例  
-3、SqlSession
+(2) 它一旦被创建就应该在运行期间一直存在。  
+3、SqlSession  
 (1) 可以理解为是连接到连接池的一个请求  
 (2) 它的实例不是线程安全的，因此不能被共享  
 (3) 使用完之后应该关闭，防止资源被占用  
