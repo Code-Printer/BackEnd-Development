@@ -5,7 +5,9 @@
 3、内置http服务器，比如tomcat，jetty。不需要额外的去集成下载tomcat。
 ### SpringBoot与Spring的区别  
 SpringBoot是Spring的扩展，它简化了Spring的依赖配置、MVC配置、模板引擎配置、安全配置、 打包和部署。使得开发、测试、部署变得更加方便。
-
+### SpringBoot与SpringMVC的区别  
+SpringMVC提供一种轻度耦合的方式开发web应用。  
+SpringBoot实现了自动配置，无需xml文件手动配置，降低了项目搭建的复杂度。
 ### SpringBoot的常用注解及作用  
 #### @SpringBootApplication
 这个注解是Spring Boot最核心的注解，用在 Spring Boot的主类上，标识这是一个 Spring Boot 应用，用来开启 Spring Boot 的各项能力。实际上这个注解是@Configuration,@EnableAutoConfiguration,@ComponentScan三个注解的组合。由于这些注解一般都是一起使用，所以Spring Boot提供了一个统一的注解@SpringBootApplication。  
@@ -35,9 +37,7 @@ SpringBoot是Spring的扩展，它简化了Spring的依赖配置、MVC配置、�
 ### SpringBoot的自动装配原理  
 springboot的自动装配就是通过自定义实现的ImportSelector接口，从而导致项目启动时会自动将所有项目META-INF/spring.factories路径下的配置类注入到spring容器中，从而实现了自动装配。 
 
-### SpringBoot与SpringMVC的区别  
-SpringMVC提供一种轻度耦合的方式开发web应用。  
-SpringBoot实现了自动配置，无需xml文件手动配置，降低了项目搭建的复杂度。
+
 
 
 
