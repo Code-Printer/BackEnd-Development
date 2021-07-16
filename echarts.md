@@ -1,5 +1,6 @@
 # Echart技术  
-Echarts是基于Canvas画布，底层依赖矢量图形库ZRender的JavaScript开源可视化库，提供个性化的数据可视化图表。  
+Echarts是基于Canvas画布，底层依赖矢量图形库ZRender的JavaScript开源可视化库，提供个性化的数据可视化图表。
+项目中的应用：网站的活跃度分析  
 ## Echarts操作步骤  
 1、下载并在项目中引入echarts.min.js文件  
 2、创建一个容器,用于将图表在容器中显示  
