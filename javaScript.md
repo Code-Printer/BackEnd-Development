@@ -1,4 +1,5 @@
 # JavaScript
+进行提交表单数据的校验，使用onsubmit=false可以阻止表单数据提交
 ## javaScript中需要注意的点
 ### 变量(variable)  
 将变量理解为容器，将数据放在容器中，想要获取数据时从相应的容器中获取。  
