@@ -128,9 +128,9 @@ public class JedisTest {
         // 1. 获取Jedis对象
         Jedis jedis = JedisUtils.getJedis();
 
-        // 2. 执行操作，Jedis中操作的方法名与Linux中命令行工具中的指令同名
+        // 2. 执行操作，Jedis中操作的方法名与Linux中命令行工具中的指令同名,添加set集合类型的数据
         jedis.sadd("key1", "abc", "abc", "def");
-        Long key1 = jedis.scard("key1");
+        Long key1 = jedis.scard("key1");//获取key1元素在集合中的个数
         System.out.println("运行结果：" + key1);
 
         // 3.关闭连接
@@ -178,6 +178,46 @@ Redis是单线程的，故执行save指令会阻塞其之后的命令的执行(�
 (3) set k1 v1，set k1 v1认为key的值发生变化  
 (4) 配置方式执行的是bgsave指令  
 9、RDB两种指令的对比  
-![result](https://static01.imgkr.com/temp/baea0553db9e4a078d2bf484eaa49695.png)   
+![result](https://static01.imgkr.com/temp/baea0553db9e4a078d2bf484eaa49695.png)    
+10、RDB缺点  
+(1) 基于快照思想，每次读写都是全部数据，当数据量较大时，效率非常低  
+(2) 基于fork创建子进程，内存产生额外的消耗  
+(3) 宕机带来数据丢失风险(可能某个时间点的数据未保存)  
+## AOF  
+1、AOF:以日志的方式记录每次改变数据的操作命令，重启之后执行AOF中保存的命令恢复数据，较为主流。
 
-## AOF
+2、对redis.conf配置文件进行修改 (修改配置文件后需要重启Redis)  
+![result](https://static01.imgkr.com/temp/0f597fe00892455eaeebc3a38d16b96e.png)   
+
+3、AOF执行策略  
+(1) everysec (每秒)
+每秒将缓冲区的指令写入aof文件中，宕机会丢失0-1秒的数据，性能高，建议使用  
+(2) always (每次)
+每次执行指令都将其写入aof文件中，数据零失误，性能较低，不建议使用    
+(3) no (系统控制)
+由操作系统控制写入aof文件的时间，不建议使用    
+注意：i. 只有使得key变化的指令才记录  
+ii. 重启之后自动从aof文件中读取指令并执行  
+iii. select指令虽然没有对key进行修改，但仍需记录，以知道数据存储的位置  
+
+##  AOF重写  
+1、概念：AOF文件中已经记录的对同一数据的若干条操作的记录转换为数据最终结果对应指令的记录  
+![result](https://static01.imgkr.com/temp/67e0ce6bf9c742bbb73084c926d30813.png)    
+
+2、AOF重写作用  
+1、降低磁盘占用量，提高磁盘利用率  
+2、提高持久化效率，降低持久化写的时间，提高读写性能  
+3、降低数据恢复用时，提高数据回复效率  
+3、为防止数据量过大导致缓冲区溢出，合并后的每条指令最多写入64个元素  
+4、AOF重写方式  
+(1) 手动重写，执行bgrewriteaof指令  
+![result](https://static01.imgkr.com/temp/30b3c517ea4e47418d191cf32eb49d28.png)  
+
+(2) 自动重写，修改配置文件  
+![result](https://static01.imgkr.com/temp/54c8d863fdd44b90beeb76e0b4b8ebad.png)  
+## RDB与AOF的选择  
+1、对比    
+![result](https://static01.imgkr.com/temp/4b736ee3579649efb7584289dcc5cc35.png)  
+
+2、选择策略  
+![result](https://static01.imgkr.com/temp/dcaabdb3f8434f04b6ffbad1105c03d2.png)  
