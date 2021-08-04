@@ -1,13 +1,27 @@
-# Redis  
-一个基于内存的key-value数据结构的NoSql数据库。  
+# Redis 
 ## 特点
 (1) 支持数据的持久化，可以将数据保存在磁盘中，重启之后可以再次加载到内存中使用。    
-(2) Redis中的值支持多种数据类型，支持String、list、set、zset、hash等数据结构。   
+(2) Redis中的值支持多种数据类型，支持String、list、set、zset、hash等数据结构。  
+
 ## 应用场景  
 1、热点数据加速查询(主要场景)，如热点商品、热点信息等访问量较高的数据  
 2、即时信息查询，如公交到站信息、在线人数信息等  
 3、时效性信息控制，如验证码控制、投票控制等  
-4、分布式数据共享，如分布式集群架构中的session分离消息队列   
+4、分布式数据共享，如分布式集群架构中的session分离消息队列  
+
+## 数据持久化存储  
+1、概念：利用磁盘进行数据存储，在特定时间将数据进行恢复的工作。  
+2、持久化的两种方式  
+(1)快照方式(RDB)：将某个时间点的工作状态保存下来，恢复时可直接恢复指定时间点的工作状态。    
+(2)日志方式(AOF)：将对数据的所有操作过程记录下来，恢复数据时重新执行这些操作。一个基于内存的key-value数据结构的NoSql数据库。  
+
+## RDB与AOF的选择  
+1、对比    
+![result](https://static01.imgkr.com/temp/4b736ee3579649efb7584289dcc5cc35.png)  
+
+2、AOF和RDB选择策略   
+![result](https://static01.imgkr.com/temp/dcaabdb3f8434f04b6ffbad1105c03d2.png)  
+
 ## Redis基础知识  
 1、Redis是单线程的  
 2、Redis默认拥有16个数据库，数据库编号从0开始，默认使用0数据库  
@@ -17,7 +31,10 @@
 6、flushdb清空当前数据库  
 7、flushall清空所有数据库  
 8、Redis中所有数据库使用同一个密码，默认没有密码，Redis认为安全层面应该由Linux来保证  
-9、Redis的默认端口6379  
+9、Redis的默认端口6379   
+## Redis数据库的存储空间  
+![result](https://static01.imgkr.com/temp/1817f0eba0694fd69b22e6f9b097868c.png)  
+
 ## Redis的Linux操作及不同数据类型值的操作方法  
 ### 1、key(键)
 ![result](https://static01.imgkr.com/temp/638a22d2949b466e8b168be85d9e8e40.png)  
@@ -147,12 +164,6 @@ public class JedisTest {
 
 2、运行软件  
 ![result](https://static01.imgkr.com/temp/c16255bc37e5422cbb600c8bf374e8f4.png)   
- 
-## 数据持久化存储  
-1、概念：利用磁盘进行数据存储，在特定时间将数据进行恢复的工作。  
-2、持久化的两种方式  
-(1)快照方式(RDB)：将某个时间点的工作状态保存下来，恢复时可直接恢复指定时间点的工作状态。    
-(2)日志方式(AOF)：将对数据的所有操作过程记录下来，恢复数据时重新执行这些操作。  
 
 ## RDB  
 1、对redis.conf配置文件进行修改 (修改配置文件后需要重启Redis)  
@@ -215,9 +226,3 @@ iii. select指令虽然没有对key进行修改，但仍需记录，以知道数
 
 (2) 自动重写，修改配置文件  
 ![result](https://static01.imgkr.com/temp/54c8d863fdd44b90beeb76e0b4b8ebad.png)  
-## RDB与AOF的选择  
-1、对比    
-![result](https://static01.imgkr.com/temp/4b736ee3579649efb7584289dcc5cc35.png)  
-
-2、选择策略  
-![result](https://static01.imgkr.com/temp/dcaabdb3f8434f04b6ffbad1105c03d2.png)  
