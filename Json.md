@@ -54,7 +54,7 @@ public void test() throws IOException {
    //json对象转为js字符串
    alert(JSON.stringify(resData))
    //js字符串转json对象
-   var jsonObj = $.parseJSON("{"url":"123"}");
+   var jsonObj = $.parseJSON('{"url":"123"}');
    alert(jsonObj)
    alert(jsonObj["url"])
 </script>
