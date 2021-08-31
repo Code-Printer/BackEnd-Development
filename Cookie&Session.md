@@ -1,7 +1,13 @@
+# 为什么需要会话技术  
+由于HTTP请求是无状态的，即每次请求服务器端，都是一个全新的请求，服务器并不能判断这个请求用户的登录信息，所以每次请求都会弹出登录页面，此时就需要会话技术保存用户的登录信息。
 ## 会话技术  
 1、一次会话包含多个请求和响应(一次会话表示浏览器第一次给服务器发送请求，会话建立，直到一方断开为止)。  
 2、功能：在一次会话的多次请求间共享数据。  
-3、方式：保存在客户端(浏览器)会话技术：Cookie，保存在服务端会话技术：Session 
+3、方式：保存在客户端(浏览器)会话技术：Cookie，保存在服务端会话技术：Session   
+## web会话的全过程  
+1、客户端向服务器端发送登录请求，服务器端收到请求创建session对象(request.getSession())。  
+2、服务器端紧接着创建Cookie对象，将刚才创建的session的id以键值对的方式放在cookie中  
+3、服务器将创建的cookie对象传回到客户端，客户端每次请求都携带cookie对象，用户会话的用户身份验证
 ### Session和Cookie的区别：  
 (1)Session存储在服务器端，Cookie存储在客户端。  
 (2)Session在一次会话中只能有一个，Cookie在一次会话中可以有多个。  
@@ -9,7 +15,7 @@
 (4)Session存储的数据没有大小限制，Cookie存储的数据有(4kb)。  
 (5)Session数据安全，Cookie数据相对不安全。
   
-## Cookie(服务器会把Cookie对象发给用户浏览器，浏览器会存储该Cookie对象，注意是浏览器不是浏览器端)
+## Cookie(服务器会把Cookie对象发给用户浏览器，浏览器会存储该Cookie对象)
 1、概念：将数据保存在客户端，客户端有了Cookie后，每次请求都会将Cookie发送给服务器端。  
 2、使用步骤：  
 1、创建Cookie对象，绑定数据(键值对)  
@@ -177,7 +183,7 @@ public class SessionDemo2 extends HttpServlet {
 }
 ```  
 
-3、上述程序原理：<font color="white">Session底层是基于Cookie实现的。</font>  
+3、上述程序原理： 
 ![result](https://static01.imgkr.com/temp/2977225269934c18999dd20794c305ba.png)  
 
 注意：每个Seeion都有其唯一的id号，这个id号是由服务器在创建Session对象时自动生成的，可通过getId()获取当前Session对象的id号。     
