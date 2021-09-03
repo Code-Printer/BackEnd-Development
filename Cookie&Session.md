@@ -8,12 +8,17 @@
 1、客户端向服务器端发送登录请求，服务器端收到请求创建session对象(request.getSession())。  
 2、服务器端紧接着创建Cookie对象，将刚才创建的session的id以键值对的方式放在cookie中  
 3、服务器将创建的cookie对象传回到客户端，客户端每次请求都携带cookie对象，用户会话的用户身份验证
-### Session和Cookie的区别：  
-(1)Session存储在服务器端，Cookie存储在客户端。  
-(2)Session在一次会话中只能有一个，Cookie在一次会话中可以有多个。  
-(3)Session可以存储的值是任意类型，而Cookie存储的值只能是字符串。    
-(4)Session存储的数据没有大小限制，Cookie存储的数据有(4kb)。  
-(5)Session数据安全，Cookie数据相对不安全。
+## Session和Cookie的区别：  
+1、所处位置不同：cookie在客户端；session在服务器端  
+2、安全性不同：session比cookie的安全性高  
+3、存储数据的类型不同：cookie是字符串，session可以存储字符串、对象、集合   
+4、容量大小不一样：session比cookie大，理论上无上限  
+5、有效期不同：session依赖于JESSIONID的cookie，而cookie JSESSIONID的过期时间默认为-1，关闭窗口该session就会失效；cookie可以通过expires设置有效期。  
+6、是否支持跨域：cookie支持跨域，session不支持跨域    
+## 客户端禁止cookie，那服务器端的session怎么用  
+一般默认情况下，在会话中，服务器的session的sessionid是会传输到浏览器通过cookie存储，默认每次请求都会发送cookie到服务器端，服务器从cookie中获取sessionid从而获取对应的session。如果浏览器禁用了cookie，浏览器无法携带sessionid，服务器无法识别请求中的用户身份，session失效。但是可以通过其他方法在禁用 cookie 的情况下，可以继续使用session：  
+1、通过在请求路径中携带sessionid来传递  
+2、通过在请求头中写sessionid来传递，请求服务器时，js设置携带该头字段。
   
 ## Cookie(服务器会把Cookie对象发给用户浏览器，浏览器会存储该Cookie对象)
 1、概念：将数据保存在客户端，客户端有了Cookie后，每次请求都会将Cookie发送给服务器端。  
