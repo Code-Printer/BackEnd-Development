@@ -1,4 +1,9 @@
-# Spring的概念
+# Spring的概念  
+## Spring框架的好处   
+1、IOC(依赖注入，有依赖关系的对象从主动创建到从容器中注入的方式)  
+2、AOP(切入方法后进行日志打印)  
+3、提供了jUnit4的支持，可以通过注解(test)测试程序  
+4、可以集成其他框架(mybatis)
 ## Spring创建bean的流程：  
 1、通过getBean方法从bean工厂中获取对应bean  
 2、如果没有对应bean，则使用createBeanInstance方法通过反射的方式创建bean实例  
@@ -14,6 +19,12 @@ Spring框架中在A类中引用B类，在B类中引用A类。此时如果获取A
 ### 动态代理问题   
 动态代理是指在一个类中，如果调用另一个类，而这个类并未在bean工厂创建完整的bean，此时需要使用这个另一个类的代理对象。  
 
+## Spring的类中引用类型属性的赋值装配方式  
+1、no：默认的方式是不进行自动装配，通过显式设置bean标签的ref属性来进行装配  
+2、byName：通过参数名自动装配，Spring 容器在配置文件中将bean的autowire属性被设置成byname，之后容器试图装配和该bean的属性具有相同名字的bean。  
+3、bytype：通过参数类型自动装配，Spring 容器在配置文件中将bean的autowire属性被设置成byType，之后容器试图装配和该bean属性具有相同类型的bean。如果有多个bean符合条件，则抛出错误。
+4、constructor：Spring容器在配置文件中将bean的autowire属性被设置成constructor(要求类的定义要有构造器，使用构造器对类中属性进行赋值)，之后容器试图装配和该bean属性类型相同的bean。如果没有确定的带参数的构造器参数类型bean，将会抛出异常。  
+5、autodetect：Spring容器在配置文件中将bean的autowire属性被设置成autodetect，该bean标签在装配属性时首先尝试使用constructor的方式来自动装配，如果无法工作，则使用byType方式。
 ## Spring的@autowaire注解是怎么保证线程安全的  
 Spring的@autowaire是通过生成动态代理对象，让线程去操作由ThredLocal修饰的共享变量，从而达到每个线程之间的隔离。  
 
@@ -21,5 +32,5 @@ Spring的@autowaire是通过生成动态代理对象，让线程去操作由Thre
 自动装配：在springboot中使用少量注解和配置即可使用引入的依赖功能  
 Spring Boot 通过@EnableAutoConfiguration开启自动装配，再通过SpringFactoriesLoader最终加载META-INF/spring.factories中的自动配置类，实现自动装配。(自动配置类是通过@Conditional按需加载的配置类的)，想要其生效必须引入spring-boot-starter-xxx包实现起步依赖。  
 
-
+## 
  
