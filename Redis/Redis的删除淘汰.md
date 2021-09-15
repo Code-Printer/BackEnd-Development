@@ -27,7 +27,7 @@
 
 注意:根据默认值server.hz，activeExpireCycle()一秒钟检测10次，每次检测耗时25ms，即一秒钟执行检测的时间为250ms (占用cpu1/4时间),如果 activeExpireCycle() 执行时间到期 (只可占用CPU的1/4时间)，下次从 (current_db + 1) % 16 继续向后执行。      
 ## 淘汰策略  
-场景：新数据进入Redis时，如果内存不够，需要淘汰一些数据。  
+场景：新数据进入Redis时，如果内存不够，需要淘汰一些数据。(淘汰策略为LRU或LFU)  
 注意：Redis在执行每个指令前，会调用 freeMemoryIfNeeded() 检测内存是否充足且释放内存。  
 ### 数据淘汰的相关配置  
 1、分配给Redis的最大内存，通常设置为占用物理内存的50%以上(maxmemory ?mb)  
