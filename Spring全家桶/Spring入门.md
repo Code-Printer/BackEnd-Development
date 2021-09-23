@@ -255,7 +255,7 @@ public class IOCTest {
 
    <bean id="Student12" class="com.qizegao.test.Student" scope="prototype"></bean>
 ```  
-<font color="white">4、通过实现FactoryBean创建爱你bean</font>  
+<font color="white">4、通过实现FactoryBean创建bean</font>  
 FactoryBean是Spring的一个接口，此接口中有三个抽象方法，只要是这个接口的实现类，Spring 都认为是一个工厂：
 i. Spring会自动调用该工厂的工厂方法创建实例
 ii. 该工厂创建的组件(实例)，ioc容器创建时不会创建此组件
