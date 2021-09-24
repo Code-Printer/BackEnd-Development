@@ -169,8 +169,8 @@ public class Main {
          //连接本地的 Redis 服务
          jedis = new Jedis(String ip,int port);
          //或创建数据库连接池，从数据库连接池中获取jedis 
-        JedisPool jedisPool = new JedisPool(String ip,int port);  
-        jedis = jedisPool.getResource();
+        //JedisPool jedisPool = new JedisPool(String ip,int port);  
+        //jedis = jedisPool.getResource();
         System.out.println("连接成功");
         //查看服务是否运行
         System.out.println("服务正在运行: "+jedis.ping());
@@ -189,4 +189,32 @@ public class Main {
         }
 }
 ```  
-(二)使用集群的方式测试(只需要将所有Jedis类型换成JedisCluster)  
+(二)使用集群的方式测试(只需要将所有Jedis类型换成JedisCluster)    
+```java
+public class Main {
+    private static Jedis jedis =null;
+    public static void main(String[] args) {
+        HashSet<HostAndPort> nodes = new HashSet<>();
+// 设置集群
+        nodes.add(new HostAndPort("192.168.1.125", 7001));
+        nodes.add(new HostAndPort("192.168.1.125", 7002));
+        nodes.add(new HostAndPort("192.168.1.125", 7003));
+        nodes.add(new HostAndPort("192.168.1.125", 7004));
+        nodes.add(new HostAndPort("192.168.1.125", 7005));
+        nodes.add(new HostAndPort("192.168.1.125", 7006));
+        JedisCluster cluster = new JedisCluster(nodes);
+        user();
+    }
+    public static void user(){
+        UserDao user = new UserDao(cluster);
+        user.delAll();
+        user.addUser(new User("21","ldl","123456","刘地林"));
+        user.addUser(new User("31","oyl","123456","欧一乐"));
+        user.addUser(new User("41","tyj","123456","唐玉棋"));
+        user.addUser(new User("51","cs","123456","陈胜"));
+        user.addUser(new User("61","gsq","123456","郭世棋"));
+        for (User user1 : user.listAll()) {
+            System.out.println(user1);
+        }
+}
+```
