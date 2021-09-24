@@ -32,5 +32,15 @@ Spring的@autowaire是通过生成动态代理对象，让线程去操作由Thre
 自动装配：在springboot中使用少量注解和配置即可使用引入的依赖功能  
 Spring Boot 通过@EnableAutoConfiguration开启自动装配，再通过SpringFactoriesLoader最终加载META-INF/spring.factories中的自动配置类，实现自动装配。(自动配置类是通过@Conditional按需加载的配置类的)，想要其生效必须引入spring-boot-starter-xxx包实现起步依赖。  
 
-## 
- 
+## Spring的七大传播机制  
+当我们调用一个基于Spring的Service接口方法（如UserService#addUser()）时，它将运行于Spring管理的事务环境中，Service接口方法可能会在内部调用其它的Service接口方法以共同完成一个完整的业务操作，因此就会产生服务接口方法嵌套调用的情况， Spring通过事务传播行为控制当前的事务如何传播到被嵌套调用的目标服务接口方法中。
+ Spring在TransactionDefinition接口中规定了7种类型的事务传播行为，它们规定了事务方法和事务方法发生嵌套调用时事务如何进行传播：  
+ 1、PROPAGATION_required：如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常见的选择。  
+ 2、PROPAGATION_supports：有事务则在当前事务中执行，如果当前没有事务，就以非事务方式执行。    
+ 3、PROPAGATION_mandatory：使用当前的事务，如果当前没有事务，就抛出异常。  
+ 4、PROPAGATION_required_new：新建事务，如果当前存在事务，把当前事务挂起。(启动一个新的, 不依赖于环境的 "内部" 事务. 这个事务将被完全 commited 或 rolled back 而不依赖于外部事务, 它拥有自己的隔离范围, 自己的锁。当内部事务开始执行时, 外部事务将被挂起, 内务事务结束时, 外部事务将继续执行.)  
+ 5、PROPAGATION_not_supports：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。(外部方法的Transaction暂停直至innerMethod执行完毕)  
+ 6、PROPAGATION_never：以非事务方式执行，如果当前存在事务，则抛出异常。  
+ 7、PROPAGATION_nested：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则新建一个事务。  
+
+
