@@ -181,7 +181,7 @@ public class SpringTest {
 也可以在方法中通过获取ConfigurableApplicationContext对象，使用其中的getEnvironment().get(set)ActiveProfiles("环境名")，来获取或设置当前激活的环境  
 
 
-## ORM框架(Object-relational mapping)关系映射框架  
+## ORM框架(Object-relational mapping)关系映射框架(例如：mybatis、heberntis)  
 ORM框架是为了解决面向对象与关系型数据库的不匹配问题。优点是数据访问更抽象、轻便，支持面向对象的封装  
 
 
