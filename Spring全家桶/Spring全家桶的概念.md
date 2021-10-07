@@ -45,7 +45,7 @@ JavaConfig是Spring3.0新增的概念，使用注解的方式替换了xml文件�
 @EnableWebMvc，相当于xml的<mvc:annotation-driven>；  
 @ImportResource，相当于xml的<import resource="application-context-cache.xml">；  
 @PropertySource，用于读取properties配置文件；  
-@Profile，一般用于多环境配置，激活时可用@ActiveProfile("环境名")注解；  
+@Profile，一般用于多环境加载对应配置场景，激活时可用@ActiveProfile("环境名")注解；  
 
 ## Spring中@Import注解和@ImportResource的区别  
 @Import注解是在一个类中引入带有@Configuration的java类bean组件。
@@ -184,15 +184,81 @@ public class SpringTest {
 ## ORM框架(Object-relational mapping)关系映射框架(例如：mybatis、heberntis)  
 ORM框架是为了解决面向对象与关系型数据库的不匹配问题。优点是数据访问更抽象、轻便，支持面向对象的封装  
 
+## Spring中bean的自动装配的实现方式  
+1、通过xml注解，配置bean标签中autowire属性的值  
+```xml
+<bean id="employeeDAO" class="com.guor.EmployeeDAOImpl" autowire="byName" />
+```
+2、通过注解的方式(@Autowired)
 
-
+## Spring开启基于注解的自动装配（使用@Autowired）  
+要使用 @Autowired，需要注册 AutowiredAnnotationBeanPostProcessor，可以有以下两种方式来实现：  
+1、在配置文件中的<beans>下引入 <context:annotation-config>  
+```xml
+<beans>
+    <context:annotation-config />
+</beans>
+```  
+2、在配置文件中直接引入AutowiredAnnotationBeanPostProcessor  
+```xml
+<beans>
+    <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"/>
+</beans>
+```
 
 ## Spring的@autowaire注解是怎么保证线程安全的  
 Spring的@autowaire是通过生成动态代理对象，让线程去操作由ThredLocal修饰的共享变量，从而达到每个线程之间的隔离。  
 
+## Spring中的@Required注解  
+@Required注释是为了保证类中所对应的属性必须在xml中被初始化配置。直接的理解就是，如果你在某个java类的某个set方法上使用了该注释，那么该set方法对应的属性在xml配置文件中必须被设置，否则就会报bean初始化异常。  
+```java
+public class Student {
+    private String name;
 
+    @Required     //该注释放在的是set方法中，如果没有在xml配置文件中配置相关的属性，就会报异常
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+}
+```
+```xml
+    <!-- student bean的定义 -->
+    <bean id = "student" class="com.how2java.w3cschool.required.Student">
+    <property name = "age" value="5"/>
+    </bean>
+```
 
-## Spring的七大传播机制  
+## Spring的@Qualifier注解  
+如果在xml中定义了一种类型的多个bean组件，同时在java类的注解中又想把其中一个bean对象作为属性，那么此时可以使用@Qualifier指定bean对象加@Autowired或@Resource注解（自动填充名为xxx的bean对象）来达到这一目的。  
+```java
+
+public interface IP{
+}
+@Service("IP1")
+public class IP1 implements IP{
+
+}
+@Service("IP2")
+public class IP2 implements IP{
+
+}
+//使用@Qualifier指定bean对象加@Autowired进行填充  
+@Colltroller
+public class Iptest{
+    @Autowired
+    @Qualifier("IP1")  //Qualifier的意思是合格者，通过这个标示，表明了哪个实现类才是我们所需要的
+    public IP ip;
+}
+
+//使用@Resource进行填充   
+@Colltroller
+public class Iptest{
+    @Resource(name="IP1")  //使用@resource注入时比较简单,注解自带了“name”的val就是所需的注解名称。
+    public IP ip;
+}
+```
+
+## Spring的七大事务的传播机制  
 当我们调用一个基于Spring的Service接口方法（如UserService#addUser()）时，它将运行于Spring管理的事务环境中，Service接口方法可能会在内部调用其它的Service接口方法以共同完成一个完整的业务操作，因此就会产生服务接口方法嵌套调用的情况， Spring通过事务传播行为控制当前的事务如何传播到被嵌套调用的目标服务接口方法中。
  Spring在TransactionDefinition接口中规定了7种类型的事务传播行为，它们规定了事务方法和事务方法发生嵌套调用时事务如何进行传播：  
  1、PROPAGATION_required：如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常见的选择。  
@@ -203,4 +269,28 @@ Spring的@autowaire是通过生成动态代理对象，让线程去操作由Thre
  6、PROPAGATION_never：以非事务方式执行，如果当前存在事务，则抛出异常。  
  7、PROPAGATION_nested：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则新建一个事务。  
 
-
+## Spring注入一个集合  
+list和set都使用value标签；map使用entry标签；props使用prop标签；  
+```java
+//props
+<props>
+    <!-- Properties的value值写在prop标签中 -->
+    <prop key="username">root</prop>
+    <prop key="password">gaoqize</prop>
+</props>
+//set  
+<set>
+    <value>foo</value>
+    <value>uoo</value>
+</set>
+//list
+<list>
+    <value>foo</value>
+    <value>uoo</value>
+</list>
+//map
+<map>
+    <entry key="key01" value="张三"></entry>
+    <entry key="key02" value="18"></entry>
+</map>
+```
