@@ -8,7 +8,13 @@
 1、通过getBean方法从bean工厂中获取对应bean  
 2、如果没有对应bean，则使用createBeanInstance方法通过反射的方式创建bean实例  
 3、再使用populateBean方法填充该bean实例属性  
-4、使用initializeBean方法执行该bean的初始化，以及通过bean的后置处理器对bean进行增强 
+4、使用initializeBean方法执行该bean的初始化，以及通过bean的后置处理器对bean进行增强   
+## Spring中beaen的生命周期  
+1、通过构造器或工厂方法创建bean实例；  
+2、为bean的属性赋值；  
+3、调用bean的初始化方法；  
+4、使用bean；  
+5、当容器关闭时，调用bean的销毁方法；  
 ## Spring的三级缓存
 1、一级缓存：存放完整的单例对象   
 2、二级缓存：存放半成品的bean或代理对象，用于解决循环依赖(简单理解：就是在a类中引用了b类对象，在b类中引用了a类对象。故创建a的bean时，会需要创建b的bean，但填充b的属性时，a的bean是一个半成品，需要放在二级缓存中。)  
@@ -31,7 +37,7 @@ ApplicationContext是BeanFactory的子接口，扩展了很多高级特性(同�
 3、bytype：通过参数类型自动装配，Spring 容器在配置文件中将bean的autowire属性被设置成byType，之后容器试图装配和该bean属性具有相同类型的bean。如果有多个bean符合条件，则抛出错误。
 4、constructor：Spring容器在配置文件中将bean的autowire属性被设置成constructor(要求类的定义要有构造器，使用构造器对类中属性进行赋值)，之后容器试图装配和该bean属性类型相同的bean。如果没有确定的带参数的构造器参数类型bean，将会抛出异常。  
 5、autodetect：Spring容器在配置文件中将bean的autowire属性被设置成autodetect，该bean标签在装配属性时首先尝试使用constructor的方式来自动装配，如果无法工作，则使用byType方式。  
-## JavaConfig(注解配置可以理解为xml中的beans标签)  
+## JavaConfig(注解配置，可以理解为xml中的beans标签)  
 JavaConfig是Spring3.0新增的概念，使用注解的方式替换了xml文件。javaConfig结合了xml的解耦和java编译时检查的优点：    
 @Configuration，表示这个类是配置类，可以在这个类中使用@bean标签，定义bean对象；  
 @ComponentScan，相当于xml的<context:componentScan basepackage=>，组件扫描；  
@@ -39,12 +45,13 @@ JavaConfig是Spring3.0新增的概念，使用注解的方式替换了xml文件�
 @EnableWebMvc，相当于xml的<mvc:annotation-driven>；  
 @ImportResource，相当于xml的<import resource="application-context-cache.xml">；  
 @PropertySource，用于读取properties配置文件；  
-@Profile，一般用于多环境配置，激活时可用@ActiveProfile("dev")注解；  
+@Profile，一般用于多环境配置，激活时可用@ActiveProfile("环境名")注解；  
 
 ## Spring中@Import注解和@ImportResource的区别  
 @Import注解是在一个类中引入带有@Configuration的java类bean组件。
-@ImportResource是引入spring配置文件.xml。  
+@ImportResource是引入spring配置文件.xml。应用场景：有多个配置xml文件，然后需要整合到beans.xml中，就可以使用ImportResource实现整合引入其他的xml配置bean组件 
 ```java
+
 //使用@ImportResource
 @Configuration
 @ImportResource(value = "beans-another.xml")  //在该类中引入beans-another.xml文件中的全部bean组件
@@ -67,7 +74,7 @@ public class BookConfiguration {
  
 // 替换上文的@ImportResource方式为@Import
 @Configuration
-@Import(value = BookConfiguration.class)  //引入类为BookConfiguration的bean组件，该类需要进行@Configuration注解才可以
+@Import(value = BookConfiguration.class)  //引入类为BookConfiguration中的bean组件，该类需要进行@Configuration注解才可以
 //@ImportResource(value = "beans-another.xml")
 public class SpringConfiguration {
  
@@ -85,6 +92,100 @@ Book book = (Book) applicationContext.getBean("book");
 System.out.println(book);
 
 ```
+
+## Spring中的@profile注解的作用  
+@profile注解的作用是根据当前制定的运行环境来注入相应的bean。最常见的就是使用不同的DataSource了。  
+说明代码：
+1、MoveFactor.interface
+```java
+package com.xueyou.demo;
+public interface MoveFactor {
+    void speak();
+}
+```  
+2、创建Chinese、English、German实现MoveFactor接口  
+```java
+//Chinese
+ 
+ 
+@Configuration
+@Profile(value = "dev")//该类只有当环境设置为dev才使用
+@Component
+public class Chinese implements MoveFactor {
+    @Override
+    public void speak() {
+        System.out.println("我是中国人");
+    }
+}
+
+
+//English
+ 
+@Component
+@Profile("qa")//该类只有当环境为qa才使用
+public class English implements MoveFactor{
+    @Override
+    public void speak() {
+        System.out.println("i am an English");
+    }
+}
+
+//German  
+@Component
+@Profile("prod")   //该类只有当环境为prod才使用
+public class German implements MoveFactor{
+    @Override
+    public void speak() {
+        System.out.println("i am a German");
+    }
+}
+
+```  
+3、创建一个Person类，使用MoveFactor类中的speak功能  
+```java
+@Component
+public class Person {
+
+    @Autowired
+    private MoveFactor moveFactor;
+
+    public void speak(){
+        moveFactor.speak();
+    }
+}
+```  
+4、测试profile  
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = App.class)
+@ActiveProfiles("dev")  //使用activeProfile设置当前测试环境为dev
+public class SpringTest {
+
+    @Autowired
+    Person p;
+
+    @Test
+    public void testProfile(){
+        p.speak();
+    }
+
+}
+```
+如果在web项目中，可以通过xml的方式进行配置当前项目的运行环境，来决定注入相应的bean。  
+```xml
+<context-param>
+  <param-name>spring.profiles.active</param-name>
+  <param-value>环境名</param-value>
+</context-param>
+```
+也可以在方法中通过获取ConfigurableApplicationContext对象，使用其中的getEnvironment().get(set)ActiveProfiles("环境名")，来获取或设置当前激活的环境  
+
+
+## ORM框架(Object-relational mapping)关系映射框架  
+ORM框架是为了解决面向对象与关系型数据库的不匹配问题。优点是数据访问更抽象、轻便，支持面向对象的封装  
+
+
+
 
 ## Spring的@autowaire注解是怎么保证线程安全的  
 Spring的@autowaire是通过生成动态代理对象，让线程去操作由ThredLocal修饰的共享变量，从而达到每个线程之间的隔离。  
