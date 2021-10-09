@@ -1,5 +1,5 @@
 ## MyBatis的懒加载(延迟加载(对数据的推迟加载))  
-延迟加载的应用要求：关联对象的查询与主加载对象的查询必须是分别进行的select语句，不能是使用多表连接的select查询。必须是先执行主加载对象的select语句，再延迟执行对关联对象的select查询。    
+延迟加载的应用要求(关联查询场景下)：关联对象的查询与主加载对象的查询必须是分别进行的select语句，不能是使用多表连接的select查询。必须是先执行主加载对象的select语句，再延迟执行对关联对象的select查询。    
 mybatis仅支持关联对象association和关联集合对象collection的延迟加载，association是一对一，collection是一对多查询，在mybatis配置文件中可以配置lazyloadingEnable=true/false来开启和关闭懒加载。  
 延迟加载的原理：使用CGLIB为目标对象建立代理对象，当调用目标对象的方法时进入到拦截器方法。(比如调用a.getB().getName()，拦截器方法invoke()发现a.getB()为null，会单独发送事先准备好的查询关联B对象的sql语句，把B查询出来然后调用a.setB(b)，也是a的对象的属性b就有值了，然后调用getName()，这就是延迟加载的原理。)  
 ## mybatis的执行器  
