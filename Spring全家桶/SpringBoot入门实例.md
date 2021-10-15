@@ -1,3 +1,104 @@
+# SpringBoot
+SpringBoot相比Spring简化了配置，内置了许多框架，简化了初始的项目搭建和开发过程。  
+# 微服务架构  
+每个功能都是可以独立替换和升级的软件单元  
+
+## @PropertySource注解加载指定的.properties配置文件  
+1、新建一个person.properties文件
+```java
+person.last-name=李四
+```  
+2、在Bean组件中加入@PropertySource注解  
+```java
+@PropertySource(value = {"classpath:person.properties"})
+@Component
+@ConfigurationProperties(prefix = "person")
+public class Person {
+    private String lastName;
+    public String getLastName(){
+        return this.lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+}
+```  
+3、使用测试  
+```java
+@Controller
+public class HelloController {
+    @Autowired
+    public Person person;
+
+    @ResponseBody
+    @RequestMapping("/hello")
+    public String hello(){
+        return person.getLastName();
+    }
+
+}
+```
+
+## SpringBoot中的ConfigurationProperties注解给组件批量注入配置文件属性(与@Value不同的在于@Value是从配置文件中单个赋值的)  
+该注解有一个prefix属性，通过指定的前缀，绑定配置文件中的相应配置。类的属性名称必须与配置文件属性的名称相同；类的字段必须有公共 setter 方法。  
+使用实例  
+1、application.yml 配置文件  
+```java
+person:
+  age: 18
+  boss: false
+  birth: 2017/12/12
+  maps: {k1: v1,k2: 12}
+  lists:
+   - lisi
+   - zhaoliu
+  dog:
+    name: wangwang
+    age: 2
+  last-name: wanghuahua
+```  
+2、配置文件的每个属性值，映射到bean组件中  
+```java
+@Component
+@ConfigurationProperties(prefix = "person")  //表明使用的是配置文件中的person这个属性  
+public class Person {
+    //或者使用@Value给lastName赋值  
+    //@Value("${person.last-name}")
+    public String lastName;
+    private Integer age;
+    private Boolean boss;
+    private Map<String, Object> maps;
+    private List<Object> lists;
+
+    public String getLastName(){
+        return this.lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+}
+```  
+3、使用   
+```java
+@Controller
+public class HelloController {
+    @Autowired
+    public Person person;
+
+    @ResponseBody
+    @RequestMapping("/hello")
+    public String hello(){
+        System.out.println(person.getLastName());
+        return person.getLastName();
+    }
+
+}
+``` 
+
+
 ## 第一章  
 @SpringBootApplication，这个注解放在启动类上，spring容器会自动初始化一些配置信息，扫描bean，初始化bean。  
 @RestController是基于Restful风格的spring控制类，与@Controller不同的是，@RestController返回的都是数据，例如常用的json数据，而@Controller不仅可以返回数据，还可以返回视图，如我## 们的jsp页面。  
