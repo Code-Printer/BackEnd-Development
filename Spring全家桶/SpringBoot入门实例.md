@@ -38,7 +38,27 @@ spring:
     username: root
     password: root
 ```  
-## 第四章  
+## 第四章  添加jpa支持
+jpa：是官方提供的ORM规范，将java对象以数据库记录的形式存储到数据库中。Hibernate是基于JPA实现的，JPA用起来简单，碰到复杂的情形，我们一样可以使用原生sql来解决。  
+1、在pom.xml文件添加依赖  
+```xml
+ <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+  </dependency>
+```  
+2、在项目启动类上添加扫描Repository注解  
+```java
+@EntityScan(basePackages = {"org.example"})
+@EnableJpaRepositories(basePackages = {"org.example"})
+public class Application {
+
+}
+```
+EntityScan表示扫描带有Entity注解的JPA实体，EnableJpaRepositories扫描带有Repository注解的DAO类。如果basePackages为空，则会将启动类所在的包路径作为根路径。  
+## 第五章  程序生成数据库表并构建表中字段的类型  
+
+
 
 
 
