@@ -28,7 +28,7 @@ SpringBoot实现了自动配置，无需xml文件手动配置，降低了项目�
  RequestMapping用来设置请求地址映射的注解；用于类上，表示类中的所有响应请求的方法都是以该地址作为父路径。  
 
 ### SpringBoot开启事务(事务(ACID)：要么都执行，要么都不执行)  
-1、在主类使用注解@EnableTransactionManagement开启事务  
+1、在主类(Main)使用注解@EnableTransactionManagement开启事务  
 2、在访问数据库的service方法上添加注解@Transactional即可  
 
 ### SpringBoot的自动装配原理  
