@@ -3,7 +3,7 @@ SpringBoot相比Spring简化了配置，内置了许多框架，简化了初始�
 # 微服务架构  
 每个功能都是可以独立替换和升级的软件单元  
 
-## @PropertySource注解加载指定的.properties配置文件  
+### @PropertySource注解加载指定的.properties配置文件  
 1、新建一个person.properties文件
 ```java
 person.last-name=李四
@@ -40,7 +40,7 @@ public class HelloController {
 }
 ```
 
-## SpringBoot中的ConfigurationProperties注解给组件批量注入配置文件属性(与@Value不同的在于@Value是从配置文件中单个赋值的)  
+### SpringBoot中的ConfigurationProperties注解给组件批量注入配置文件属性(与@Value不同的在于@Value是从配置文件中单个赋值的)  
 该注解有一个prefix属性，通过指定的前缀，绑定配置文件中的相应配置。类的属性名称必须与配置文件属性的名称相同；类的字段必须有公共 setter 方法。  
 使用实例  
 1、application.yml 配置文件  
@@ -98,7 +98,123 @@ public class HelloController {
 }
 ``` 
 
+### SpringBoot给容器添加组件的两种方式  
+1、通过xml中配置bean标签，来给容器添加类对象组件   
+2、使用自动扫描@ComponScan+(@Controller、@Service、@Repository@Component)  
+3、使用给类上添加@Configuration和给方法上添加@Bean注解来给容器添加组件  
+```java
+@Configuration
+public class MyAppConfig {
 
+    //将方法的返回值添加到容器中；容器这个组件id就是方法名
+    @Bean
+    public HelloService helloService01(){
+        System.out.println("配置类给容器添加了HelloService组件");
+        return new HelloService();
+    }
+}
+```  
+
+### SpringBoot项目使用占位符(${})和默认值（:）给配置文件的属性赋初值  
+主要可以应用在数据库的参数设置上：数据库配置在本地配置的参数是本地的，部署时候需要命令替换  
+```properties
+person.age=${random.int}
+person.boss=false
+person.last-name=张三${random.uuid}
+person.maps.k1=v1
+person.maps.k2=v2
+person.lists=a,b,c
+person.dog.name=${person.last-name:wanghuahu} //初始值是wanghuahu
+person.dog.age=15
+```  
+### @Conditional注解  
+作用：必须@Conditional指定的条件成立，才给容器中添加组件。
+
+| @Conditional派生注解                | 作用（判断是否满足当前指定条件）               |
+| ------------------------------- | ------------------------------ |
+| @ConditionalOnJava              | 系统的java版本是否符合要求                |
+| @ConditionalOnBean              | 容器中存在指定Bean                    |
+| @ConditionalOnMissBean          | 容器中不存在指定Bean                   |
+| @ConditionalOnExpression        | 满足spEL表达式                      |
+| @ConditionalOnClass             | 系统中有指定的类                       |
+| @ConditionalOnMissClass         | 系统中没有指定的类                      |
+| @ConditionalOnSingleCandidate   | 容器中只有一个指定的Bean,或者这个Bean是首选Bean |
+| @ConditionalOnProperty          | 系统中指定的属性是否有指定的值                |
+| @ConditionalOnResource          | 类路径下是否存在指定的资源文件                |
+| @ConditionalOnWebApplication    | 当前是web环境                       |
+| @ConditionalOnNotWebApplication | 当前不是web环境                      |
+| @ConditionalOnJndi              | JNDI存在指定项  
+### 自动配置报告  
+在控制台打印自动配置的信息，可以通过在SpringBoot项目的全局配置文件中配置debug=true属性，就可以打印自动配置报告。  
+```java
+Positive matches:（启动的，匹配成功的）
+-----------------
+
+   CodecsAutoConfiguration matched:
+      - @ConditionalOnClass found required class 'org.springframework.http.codec.CodecConfigurer'; @ConditionalOnMissingClass did not find unwanted class (OnClassCondition)
+        ......
+        
+ Negative matches:（没有启动的，没有匹配成功的）
+-----------------
+
+   ActiveMQAutoConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required classes 'javax.jms.ConnectionFactory', 'org.apache.activemq.ActiveMQConnectionFactory' (OnClassCondition)
+.....
+```  
+## 日志配置  
+SpringBoot默认使用LogBack日志系统，日志会记录程序中的Error、warn、info(默认使用该级别)、debug、 trace级别的日志信息(日志级别是逐渐降低的，如果日志级别设置为INFO，则意味TRACE和DEBUG级别的日志都看不到)，可以用于程序员针对不同情况快速定位程序位置。可以使用LOG.error()(warn、info、debug、trace)方法打印程序中出现的错误信息。  
+1、在SpringBoot项目中添加LogBack日志依赖（一般web项目中在启动器中已经包含该依赖，故可以不添加）  
+```xml
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-logging</artifactId>
+```
+2、项目中引用日志实例（使用INFO级别打印日志至控制台）:新建一个配置类LogConfig，注入一个Bean，并在方法中打印日志。    
+```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+@Configuration
+public class LogConfig {
+    private static final Logger LOG = LoggerFactory.getLogger(LogConfig.class);
+
+    @Bean
+ public Person logMethod() {
+   try{
+     LOG.info("==========print log==========");
+   }catch(Exception e){
+      LOG.error("==========print log==========");
+   }
+        
+       return new Person();
+    }
+}
+```  
+控制端输出的日志信息(时间日期、日志级别、进程ID、分隔符、线程名、Logger名(一般是类名，便于定位)、日志内容)  
+![result](https://static01.imgkr.com/temp/cfa0840ca71e49ebbd882b5e3f2e6756.png)  
+3、将日志信息存储在文件(用于线上调试时查看程序bug信息)   
+在maven项目的resources目录下的application.yml文件中添加logging属性,就可以打印日志信息到指定文件。  
+```yml
+logging:
+  file:
+    name: springbootdemo.log
+    path: C:\Users\mrgao\IdeaProjects\test2\
+```
+4、设置日志级别  
+日志级别总共有TRACE < DEBUG < INFO < WARN < ERROR < FATAL ，且级别是逐渐提供，如果日志级别设置为INFO，则意味TRACE和DEBUG级别的日志都看不到，可以在参数文件配置文件中修改日志的打印级别。打印日志的范围可以是项目的所有日志(logging.level.root)，也可以是包范围的日志(logging.level.包名的全名)。设置全项目使用的打印日志级别是INFO，com.jackie.springbootdemo.config包下使用的打印日志级别是WARN  
+```yml  
+logging:
+  level:
+    root: INFO
+    com.jackie.springbootdemo.config: WARN
+```  
+5、定义自己的日志信息打印格式  
+在resources目录下的application.yml文件中添加如下参数  
+```yml
+logging:
+  pattern:
+      file: "%d{yyyy/MM/dd-HH:mm} [%thread] %-5level %logger- %msg%n"
+      console: "%d{yyyy/MM/dd-HH:mm:ss} [%thread] %-5level %logger- %msg%n"
+```
 ## 第一章  
 @SpringBootApplication，这个注解放在启动类上，spring容器会自动初始化一些配置信息，扫描bean，初始化bean。  
 @RestController是基于Restful风格的spring控制类，与@Controller不同的是，@RestController返回的都是数据，例如常用的json数据，而@Controller不仅可以返回数据，还可以返回视图，如我## 们的jsp页面。  
@@ -156,8 +272,7 @@ public class Application {
 
 }
 ```
-EntityScan表示扫描带有Entity注解的JPA实体，EnableJpaRepositories扫描带有Repository注解的DAO类。如果basePackages为空，则会将启动类所在的包路径作为根路径。  
-## 第五章  程序生成数据库表并构建表中字段的类型  
+EntityScan表示扫描带有Entity注解的JPA实体，EnableJpaRepositories扫描带有Repository注解的DAO类。如果basePackages为空，则会将启动类所在的包路径作为根路径。 
 
 
 
