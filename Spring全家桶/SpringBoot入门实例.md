@@ -98,10 +98,10 @@ public class HelloController {
 }
 ``` 
 
-### SpringBoot给容器添加组件的两种方式  
-1、通过xml中配置bean标签，来给容器添加类对象组件   
-2、使用自动扫描@ComponScan+(@Controller、@Service、@Repository@Component)  
-3、使用给类上添加@Configuration和给方法上添加@Bean注解来给容器添加组件  
+### SpringBoot给容器添加组件的三种方式  
+1、通过手写xml中配置bean标签，来给容器添加类对象组件   
+2、使用自动扫描@ComponScan搭配(@Controller、@Service、@Repository@Component)  
+3、使用给类上添加@Configuration和给有返回类对象的方法上添加@Bean注解来给容器添加组件对象  
 ```java
 @Configuration
 public class MyAppConfig {
@@ -116,9 +116,9 @@ public class MyAppConfig {
 ```  
 
 ### SpringBoot项目使用占位符(${})和默认值（:）给配置文件的属性赋初值  
-主要可以应用在数据库的参数设置上：数据库配置在本地配置的参数是本地的，部署时候需要命令替换  
+主要可以应用在数据库的参数配置上(路径、用户名和密码)：数据库配置在本地配置的参数是本地的，部署时候需要命令替换  
 ```properties
-person.age=${random.int}
+person.age=${random.int}  //{}这个是字符串拼接时使用
 person.boss=false
 person.last-name=张三${random.uuid}
 person.maps.k1=v1
@@ -128,7 +128,7 @@ person.dog.name=${person.last-name:wanghuahu} //初始值是wanghuahu
 person.dog.age=15
 ```  
 ### @Conditional注解  
-作用：必须@Conditional指定的条件成立，才给容器中添加组件。
+作用：必须满足@Conditional指定的条件，才给容器中添加组件。
 
 | @Conditional派生注解                | 作用（判断是否满足当前指定条件）               |
 | ------------------------------- | ------------------------------ |
@@ -163,7 +163,7 @@ Positive matches:（启动的，匹配成功的）
 .....
 ```  
 ## 日志配置  
-SpringBoot默认使用LogBack日志系统，日志会记录程序中的Error、warn、info(默认使用该级别)、debug、 trace级别的日志信息(日志级别是逐渐降低的，如果日志级别设置为INFO，则意味TRACE和DEBUG级别的日志都看不到)，可以用于程序员针对不同情况快速定位程序位置。可以使用LOG.error()(warn、info、debug、trace)方法打印程序中出现的错误信息。  
+SpringBoot默认使用LogBack日志系统，日志会记录程序中的Error、warn、info(默认使用该级别)、debug、 trace级别的日志信息(日志级别是逐渐降低的，如果日志级别设置为INFO，则低于INFO级别的日志都看不到)，可以用于程序员针对不同情况快速定位程序位置。可以使用LOG.error()(warn、info、debug、trace)方法打印程序中出现的错误信息。  
 1、在SpringBoot项目中添加LogBack日志依赖（一般web项目中在启动器中已经包含该依赖，故可以不添加）  
 ```xml
 <groupId>org.springframework.boot</groupId>
@@ -187,6 +187,23 @@ public class LogConfig {
         
        return new Person();
     }
+}  
+
+//或使用注解方式
+@Slf4j
+@Configuration
+public class LogConfig {
+
+    @Bean
+ public Person logMethod() {
+   try{
+     log.info("==========print log==========");//类上使用了注解@Slf4j，就可以直接使用log变量
+   }catch(Exception e){
+      log.error("==========print log==========");
+   }
+        
+       return new Person();
+    }
 }
 ```  
 控制端输出的日志信息(时间日期、日志级别、进程ID、分隔符、线程名、Logger名(一般是类名，便于定位)、日志内容)  
@@ -200,24 +217,28 @@ logging:
     path: C:\Users\mrgao\IdeaProjects\test2\
 ```
 4、设置日志级别  
-日志级别总共有TRACE < DEBUG < INFO < WARN < ERROR < FATAL ，且级别是逐渐提供，如果日志级别设置为INFO，则意味TRACE和DEBUG级别的日志都看不到，可以在参数文件配置文件中修改日志的打印级别。打印日志的范围可以是项目的所有日志(logging.level.root)，也可以是包范围的日志(logging.level.包名的全名)。设置全项目使用的打印日志级别是INFO，com.jackie.springbootdemo.config包下使用的打印日志级别是WARN  
+日志级别总共有TRACE < DEBUG < INFO < WARN < ERROR < FATAL ，且级别是逐渐降低的，如果日志级别设置为INFO，则意味TRACE和DEBUG级别的日志都看不到，可以在参数文件配置文件中修改日志的打印级别。设置日志打印级别可以是项目的所有日志(logging.level.root)，也可以设置包范围的日志打印级别(logging.level.包名的全名)。  
 ```yml  
 logging:
   level:
-    root: INFO
-    com.jackie.springbootdemo.config: WARN
+    root: INFO  //设置全项目使用的打印日志级别是INFO
+    com.jackie.springbootdemo.config: WARN  //com.jackie.springbootdemo.config包下使用的打印日志级别是WARN
 ```  
-5、定义自己的日志信息打印格式  
+5、定义自己的日志信息在文件和控制台的打印格式：  
 在resources目录下的application.yml文件中添加如下参数  
 ```yml
 logging:
   pattern:
       file: "%d{yyyy/MM/dd-HH:mm} [%thread] %-5level %logger- %msg%n"
       console: "%d{yyyy/MM/dd-HH:mm:ss} [%thread] %-5level %logger- %msg%n"
-```
+```  
+## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
+使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
+前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
+
 ## 第一章  
 @SpringBootApplication，这个注解放在启动类上，spring容器会自动初始化一些配置信息，扫描bean，初始化bean。  
-@RestController是基于Restful风格的spring控制类，与@Controller不同的是，@RestController返回的都是数据，例如常用的json数据，而@Controller不仅可以返回数据，还可以返回视图，如我## 们的jsp页面。  
+@RestController是基于Restful风格的spring控制类，与@Controller不同的是，@RestController只能返回数据，例如常用的json数据，而@Controller不仅可以返回数据，还可以返回视图，比如我们的jsp页面。  
 @RequestMapping定义的是请求的映射路径。  
 @GetMapping与@RestController是一块的，表示这是个get请求，与@RequestMapping(method = RequestMethod.GET)是一个意思。   
 ## 第二章  
