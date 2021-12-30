@@ -20,15 +20,6 @@ public class SpringbootestApplication {
     }
 
 }
-```
-### Servlet相关配置  
-修改对应的服务监听端口和项目域启动路径：在resource/application.properties文件中添加以下配置：  
-```properties
-#端口号
-server.port=8081
-#服务环境路径
-server.servlet.context-path=/demo
-#此时重启服务，在浏览器中输入http://localhost:8081/demo/user
 ```   
 ### 修改banner的内容  
 1、通过配置修改banner的内容。首先访问一下网站,输入文本，生成相应的banner。    
