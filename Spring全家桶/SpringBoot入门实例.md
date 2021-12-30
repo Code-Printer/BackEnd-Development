@@ -234,7 +234,16 @@ logging:
 ```  
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
-前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。   
+前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
+### SpringBoot的web依赖配置  
+SpringBoot极大地简化了Spring应用从搭建到开发的过程，做到了开箱即用的方式。开发者想要快速开发web应用，只要在pom.xml加入了spring-boot-starter-web依赖即可。    
+spring-boot-starter-web的组成如下表：  
+1、spring-boot-starter  核心包，包括了自动化配置支持、日志、YAML 文件解析的支持等。  
+2、spring-boot-starter-json 读写 JSON 包  
+3、spring-boot-starter-tomcat Tomcat 嵌入式 Servlet 容器包  
+4、hibernate-validator Hibernate 框架提供的验证包  
+5、spring-web Spring 框架的 Web 包  
+6、spring-webmvc Spring 框架的 Web MVC 包  
 ### servlet相关配置  
 在resource/application.properties文件中添加以下配置更改服务监听端口和服务环境路径：  
 ```properties  
