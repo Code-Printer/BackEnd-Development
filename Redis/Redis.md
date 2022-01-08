@@ -60,10 +60,47 @@
 ### 5、Zset (有序集合)  
 每个元素都会关联一个double类型的分数(score)；Redis通过分数自动的为集合中的 成员进行从小到大的排序；成员不可重复，分数可以重复  
 ![result](https://static01.imgkr.com/temp/5486c49180e54f20aa61442e03394de0.png)  
-### 6、Hash  
+### 6、Hash表  
 类似Java中的HashMap<String, Object>；是一个键值对集合；适合存储对象   
 ![result](https://static01.imgkr.com/temp/c826a01509d74fa3b03efd8df23ea0e3.png)   
 
+### ubuntu上在redis客户端通过操作命令操作Redis的服务器  
+1、命令行开启redis客户端  
+```
+~ redis-cli
+```  
+2、查看和删除redis服务器中的键  
+```
+> keys *   #查看redis服务器中的所有键  
+> del keyName #删除该键的记录
+```  
+3、增加一条键值对和获取一个key值  
+```
+> set keyName "StringValue"  
+> get keyName
+```  
+4、增加一条数字记录和让该数字自增  
+```
+> set keyName 2  
+> INCR keyName  
+```  
+5、增加键的值为list类型  
+```
+> LPUSH keyName Value  #从该列表的左侧插入  
+> RPUSH keyName Value #从该列表的右侧插入  
+> LRANGE keyName 起始位置  终点位置  #从左至右打印该键的列表中的起止值
+```  
+6、增加一个键的值为hash表的记录和获取该记录数据  
+```
+> HSET keyName 键值对(keyName Value)  
+> HGET keyName 键值对的键  #获取该键的值HashMap集合中对应键的值  
+> HGETALL keyName  #获取该键的HashMap集合
+```  
+7、增加一条键的值为hash表的记录  
+```
+> HMSET keyName 键值对1 键值对2 ...  #增加一条键的值为hash表类型并一次性插入多个键值对
+> HMGET keyName key1 key2 ... #获取keyName的hash表中多个键的值
+```
 ## set指令与mset(多指令)指令的选择   
 1、使用set存储n个值所需时间：n个网络时间(发送给Redis服务器) + n个处理时间(处理操作) + n个网络时间(返回结果)  
 2、使用mset存储n个值所需时间：1个网络时间(发送) + n个处理时间(处理) + 1个网络时间(返回)  
