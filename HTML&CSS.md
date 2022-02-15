@@ -83,7 +83,7 @@
 </html>
 ```  
 ##### 2、tr、td标签  
-tr和td标签是在table标签中使用的，tr表示行，td表示列
+tr、td和th标签是在table标签中使用的，tr表示行，td表示列但文本显示为普通文本，th表示列，显示文本为加粗，一般表示表的头的文本内容
 ##### 3、特殊字符(不是标签)  
 ![result](https://static01.imgkr.com/temp/7120ff5449f84094aae065b43a2cc139.png)   
 
