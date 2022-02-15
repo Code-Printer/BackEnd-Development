@@ -63,7 +63,7 @@
 ![result](https://static01.imgkr.com/temp/d1bdb22f79d54084a37c438c17d41673.png)  
 
 #### 常用标签
-1、font标签  
+##### 1、font标签  
 作用：可以用来修改显示文本文字的字体、颜色、大小。  
 常用属性：  
 1、face属性：设置文字字体  
@@ -81,8 +81,10 @@
     <font face="宋体" , color="red", size="8">我是字体标签</font>
 </body>
 </html>
-```
-2、特殊字符(不是标签)  
+```  
+##### 2、tr、td标签  
+tr和td标签是在table标签中使用的，tr表示行，td表示列
+##### 3、特殊字符(不是标签)  
 ![result](https://static01.imgkr.com/temp/7120ff5449f84094aae065b43a2cc139.png)   
 
 代码演示：把输出行标签<br>显示在页面中，并在标签前后加一个空格  
