@@ -5,18 +5,18 @@
 3、提供了jUnit4的支持，可以通过注解(test)测试程序  
 4、可以集成其他框架(mybatis)
 ## Spring创建bean的流程：  
-1、通过getBean方法从bean工厂中获取对应bean  
-2、如果没有对应bean，则使用createBeanInstance方法通过反射的方式创建bean实例  
-3、再使用populateBean方法填充该bean实例属性  
-4、使用initializeBean方法执行该bean的初始化，以及通过bean的后置处理器对bean进行增强   
+1、通过bean工厂中获取对应bean(getBean方法)  
+2、如果没有对应bean，则通过反射的方式创建bean实例(createBeanInstance方法)  
+3、再填充该bean实例属性(populateBean方法)  
+4、执行该bean的初始化方法(使用initializeBean方法)    
 ## Spring中beaen的生命周期  
-1、通过构造器或工厂方法创建bean实例；  
+1、通过构造器或工厂方法创建bean实例(默认创建的是单例对象)；  
 2、为bean的属性赋值；  
 3、调用bean的初始化方法；  
 4、使用bean；  
 5、当容器关闭时，调用bean的销毁方法；  
 ## Spring的三级缓存
-1、一级缓存：存放完整的单例对象   
+1、一级缓存：存放完整创建的单例对象   
 2、二级缓存：存放半成品的bean或代理对象，用于解决循环依赖(简单理解：就是在a类中引用了b类对象，在b类中引用了a类对象。故创建a的bean时，会需要创建b的bean，但填充b的属性时，a的bean是一个半成品，需要放在二级缓存中。)  
 3、三级缓存(有一个lambda表达式，是将为未初始化完全或填不完全的bean转化成其代理对象)：存放单例工厂，用于生成动态代理对象，返回该bean的代理对象(简单理解：当当前bean被其他bean引用时，如果自己未实例化完全，是一个半成品bean，则需要使用其动态代理，返回自己的动态代理对象。)    
 ### 循环依赖问题
