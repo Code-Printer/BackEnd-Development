@@ -43,12 +43,12 @@ JavaConfig是Spring3.0新增的概念，使用注解的方式替换了xml文件�
 @ComponentScan，相当于xml的<context:componentScan basepackage=>，组件扫描；  
 @Bean，相当于xml中的bean标签；  
 @EnableWebMvc，相当于xml的<mvc:annotation-driven>；  
-@ImportResource，相当于xml的<import resource="application-context-cache.xml">；  
+@ImportResource，引入新的spring配置文件.xml  
 @PropertySource，用于读取properties配置文件；  
 @Profile，一般用于多环境加载对应配置场景，激活时可用@ActiveProfile("环境名")注解；  
 
 ## Spring中@Import注解和@ImportResource的区别  
-@Import注解是在一个类中引入带有@Configuration的java类bean组件。
+@Import注解是在该类中引入带有@Configuration类的bean组件。
 @ImportResource是引入spring配置文件.xml。应用场景：有多个配置xml文件，然后需要整合到beans.xml中，就可以使用ImportResource实现整合引入其他的xml配置bean组件 
 ```java
 
@@ -94,7 +94,7 @@ System.out.println(book);
 ```
 
 ## Spring中的@profile注解的作用  
-@profile注解的作用是根据当前制定的运行环境来注入相应的bean。最常见的就是使用不同的DataSource了。  
+@profile注解创建一个特定环境，只有激活该特定环境才能注入相应的bean组件。最常见的就是使用不同的DataSource了。  
 说明代码：
 1、MoveFactor.interface
 ```java
@@ -207,10 +207,10 @@ ORM框架是为了解决面向对象与关系型数据库的不匹配问题。�
 ```
 
 ## Spring的@autowaire注解是怎么保证线程安全的  
-Spring的@autowaire是通过生成动态代理对象，让线程去操作由ThredLocal修饰的共享变量，从而达到每个线程之间的隔离。  
+Spring的@autowaire是通过生成动态代理对象，让线程去操作由ThredLocal修饰的数据副本，从而达到每个线程之间的隔离。  
 
 ## Spring中的@Required注解  
-@Required注释是为了保证类中所对应的属性必须在xml中被初始化配置。直接的理解就是，如果你在某个java类的某个set方法上使用了该注释，那么该set方法对应的属性在xml配置文件中必须被设置，否则就会报bean初始化异常。  
+@Required注释是为了保证类中所对应的成员属性必须在xml中被初始化配置。直接的理解就是，如果你在某个java类的某个set方法上使用了该注释，那么该set方法对应的属性在xml配置文件中必须被设置，否则就会报bean初始化异常。  
 ```java
 public class Student {
     private String name;
@@ -229,7 +229,7 @@ public class Student {
 ```
 
 ## Spring的@Qualifier注解  
-如果在xml中定义了一种类型的多个bean组件，同时在java类的注解中又想把其中一个bean对象作为属性，那么此时可以使用@Qualifier指定bean对象加@Autowired或@Resource注解（自动填充名为xxx的bean对象）来达到这一目的。  
+定义了一种类型的多个bean组件，同时在java类的注解中又想把其中一个bean对象作为属性，那么此时可以使用@Qualifier指定@Autowired或@Resource注解加载特定的bean对象。  
 ```java
 
 public interface IP{
@@ -259,12 +259,12 @@ public class Iptest{
 ```
 
 ## Spring的七大事务的传播机制  
-当我们调用一个基于Spring的Service接口方法（如UserService#addUser()）时，它将运行于Spring管理的事务环境中，Service接口方法可能会在内部调用其它的Service接口方法以共同完成一个完整的业务操作，因此就会产生服务接口方法嵌套调用的情况， Spring通过事务传播行为控制当前的事务如何传播到被嵌套调用的目标服务接口方法中。
+当我们调用一个基于Spring的Service接口方法（如UserService#addUser()）时，它将运行于Spring管理的事务环境中，Service接口方法可能会在内部调用其它的Service接口方法以共同完成一个完整的业务操作，因此就会产生服务接口方法嵌套调用的情况， <font color='red'>Spring通过事务传播行为控制当前的事务如何传播到被嵌套调用的目标服务接口方法中。</font>
  Spring在TransactionDefinition接口中规定了7种类型的事务传播行为，它们规定了事务方法和事务方法发生嵌套调用时事务如何进行传播：  
  1、PROPAGATION_required：如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常见的选择。  
  2、PROPAGATION_supports：有事务则在当前事务中执行，如果当前没有事务，就以非事务方式执行。    
  3、PROPAGATION_mandatory：使用当前的事务，如果当前没有事务，就抛出异常。  
- 4、PROPAGATION_required_new：新建事务，如果当前存在事务，把当前事务挂起。(启动一个新的, 不依赖于环境的 "内部" 事务. 这个事务将被完全 commited 或 rolled back 而不依赖于外部事务, 它拥有自己的隔离范围, 自己的锁。当内部事务开始执行时, 外部事务将被挂起, 内务事务结束时, 外部事务将继续执行.)  
+ 4、PROPAGATION_required_new：请求新建事务，如果当前存在事务，把当前事务挂起。(启动一个新的, 不依赖于环境的 "内部" 事务. 这个事务将被完全 commited 或 rolled back 而不依赖于外部事务, 它拥有自己的隔离范围, 自己的锁。当内部事务开始执行时, 外部事务将被挂起, 内务事务结束时, 外部事务将继续执行.)  
  5、PROPAGATION_not_supports：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。(外部方法的Transaction暂停直至innerMethod执行完毕)  
  6、PROPAGATION_never：以非事务方式执行，如果当前存在事务，则抛出异常。  
  7、PROPAGATION_nested：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则新建一个事务。  
