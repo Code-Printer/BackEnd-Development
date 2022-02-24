@@ -580,7 +580,7 @@ public class BookDao {
         bookeService.save();
     }
 ```
-### @Autowired注解自动装配原理   
+### @Autowired注解自动注入过程   
 先按照类型(BookDao)去容器中找对应的组件：getBean(BookDao.class)：  
 (1) 找到一个，赋值  
 (2) 没有找到，抛异常  
