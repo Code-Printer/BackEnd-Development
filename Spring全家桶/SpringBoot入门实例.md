@@ -251,8 +251,21 @@ spring-boot-starter-web的组成如下表：
 server.port=8081
 #服务环境路径
 server.servlet.context-path=/demo   
-#访问项目路径：http://localhost:8081/demo/
-``` 
+#访问项目路径：http://localhost:端口号/demo/
+```   
+### SpringBoot设置默认访问页面  
+新建一个类WebConfigurer实现WebMvcConfigurer类重写里面的addViewControllers方法  
+```java
+@Configuration
+public class WebConfigurer implements WebMvcConfigurer{
+   @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/").setViewName("forward:index.html");
+        registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    }
+}
+```  
+
 ## 第一章  
 @SpringBootApplication，这个注解放在启动类上，spring容器会自动初始化一些配置信息，扫描bean，初始化bean。  
 @RestController是基于Restful风格的spring控制类，与@Controller不同的是，@RestController只能返回数据，例如常用的json数据，而@Controller不仅可以返回数据，还可以返回视图，比如我们的jsp页面。  
