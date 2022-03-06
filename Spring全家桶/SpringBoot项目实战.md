@@ -462,4 +462,72 @@ public class StudentBindingController {
     }
 }
 ```
-重启项目之后，就可以访问各个接口。
+重启项目之后，就可以访问各个接口。  
+## SpringBoot项目打包部署到tomcat上   
+1、选择打包成jar包或war包：
+jar包：将项目看成一整个拼图，引入的 jar包 就是一个拼块，在项目中引入的依赖就是jar包，里面是编译后的class文件。    
+war包：在 javaweb中通常都是将项目打包成war包再进行部署，里面包括写的代码编译成的class文件，依赖的包，配置文件，所有的页面文件。一个war包可以理解为一个web项目。  
+设置Springboot项目的打包格式可以在pom.xml中设置  
+```xml
+    <groupId>com.xian</groupId>
+    <artifactId>project</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>  //打包的格式在这里设置
+    <name>project</name>
+    <description>Demo project for Spring Boot</description>
+```
+2、在pom.xml里排除自带tomcat插件，有两种方法：  
+第一种，在spring-boot-starter-web这个依赖里面新增
+<exclusions>包裹的部分    
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+第二种    
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-tomcat</artifactId>
+    <scope>provided</scope>
+</dependency>
+```
+3、将项目的启动类Application.java继承SpringBootServletInitializer并重写configure方法，注意将下面两个BootApplication替换成自己的启动类名      
+```java
+@SpringBootApplication
+public class BootApplication extends SpringBootServletInitializer {
+    public static void main(String[] args) {
+        SpringApplication.run(BootdoApplication.class, args);
+    }
+ 
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+        return builder.sources(BootApplication.class);
+    }
+ 
+}
+```
+4、修改打包后的名称，可以在pom.xml修改      
+```xml
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+        <finalName>项目名</finalName>
+    </build>
+```
+5、Edit Configuration -> Maven -> 添加maven的package命令 ->执行package命令 -> 复制war包到 -> tomcat的webapps文件下 ->修改war包的名字 -> tomcat bin -> 打开startup.bat，打开tomcat容器  
+添加maven的package命令：
+![](https://static01.imgkr.com/temp/51665e2143a84e4eb424cff341891a5c.jfif)  
+修改war包名字：  
+![](https://static01.imgkr.com/temp/3d193c7b3ce94892a28511de4a2b58d0.jfif)  
+6、访问注意事项，在IEDA中如果设置了端口号，例如访问地址http://localhost:8081/list，部署到tomcat中就变成了默认的8080端口，还要加项目名，即http://localhost:8080/war包的名称/list
