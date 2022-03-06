@@ -15,7 +15,7 @@
             <artifactId>mybatis-spring</artifactId>
             <version>1.3.1</version>
         </dependency>
-```  
+```
 ## http请求访问并渲染页面，返回json格式的信息  
 1、配置数据源application.yml和创建响应的信息实体类Welcome、响应类Response、响应码ResponseCode  
 ```yml
@@ -45,7 +45,7 @@ spring:
         </dependency>
 ```
 3、视图渲染，创建WelcomeController、welcome.jsp  
-1、创建WelcomeControlle类
+创建WelcomeControlle类
 ```java
 @RestController
 @RequestMapping("/welcome")
@@ -98,7 +98,7 @@ public class WelcomeController {
     }
 }
 ```
-2、创建welcome.jsp页面  
+创建welcome.jsp页面  
 ```jsp
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
@@ -111,7 +111,7 @@ public class WelcomeController {
 </html>
 ```
 ## 使用mybatis generator工具自动生成与数据库交互的代码  
-用于为数据库表创建*mapper.xml、实体类和dao(定义操作数据库表的方法)文件  
+用于为数据库表创建*mapper.xml、实体类和dao(定义操作数据库表的方法)文件。  
 1、在pom.xml的插件中添加mybatis generator 自动生成代码工具的插件  
 ```xml
 <build>
@@ -131,7 +131,7 @@ public class WelcomeController {
         </plugins>
     </build>
 ```
-2、上面pom.xml配置的pugin路径resources/generator文件夹下添加generatorConfig.xml  
+2、上面pom.xml配置的pugin路径resources/generator文件夹下添加generatorConfig.xml   
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
  
@@ -194,17 +194,17 @@ public class WelcomeController {
 </generatorConfiguration>
 ```
 3、在maven中使用命令行mybatis-generator:generate -e，根据数据库中的表生产相关的类。    
-| 在配置启动环境栏中点击Edit Configurations -> 添加 -> Maven  
+| 在配置启动环境栏中点击Edit Configurations -> 添加 -> Maven   
 ![](https://static01.imgkr.com/temp/d76ef0688e7e4ec6b0e13c2fb76207ec.jfif)   
-|| 执行以上结果：生成了相应文件。
+|| 执行以上结果：生成了相应文件。  
 ![](https://static01.imgkr.com/temp/614cfa1941f747649d17247a3d2482d4.jfif)  
-4、 在application.yml中添加mybatis的配置  
+4、在application.yml中添加mybatis的配置   
 ```yml
 mybatis:
   mapper-locations: classpath*:mybatis/*Mapper.xml
   type-aliases-package: com.example.demo002.entity
-```  
-5、 在StudentBindingMapper.java中添加 @Repository("studentBindingMapper")注解才能使用@MapperScan扫描到。    
+```
+5、在StudentBindingMapper.java中添加 @Repository("studentBindingMapper")注解才能使用@MapperScan扫描到。    
 ```java
 @Repository("studentBindingMapper")
 public interface StudentBindingMapper {
@@ -213,7 +213,7 @@ public interface StudentBindingMapper {
     int insertSelective(StudentBinding record);
 }
 ```
-6、 在SpringbootdemoApplication.java添加@MapperScan  
+6、在SpringbootdemoApplication.java添加@MapperScan  
 ```java
 @SpringBootApplication
 @MapperScan("com.example.demo002.mapper")
@@ -463,7 +463,7 @@ public class StudentBindingController {
 }
 ```
 重启项目之后，就可以访问各个接口。  
-## SpringBoot项目打包部署到tomcat上   
+## SpringBoot项目打包部署到tomcat   
 1、选择打包成jar包或war包：
 jar包：将项目看成一整个拼图，引入的 jar包 就是一个拼块，在项目中引入的依赖就是jar包，里面是编译后的class文件。    
 war包：在 javaweb中通常都是将项目打包成war包再进行部署，里面包括写的代码编译成的class文件，依赖的包，配置文件，所有的页面文件。一个war包可以理解为一个web项目。  
