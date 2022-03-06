@@ -39,4 +39,21 @@ spring.banner.location=banner.txt
 		application.setBannerMode(Banner.Mode.OFF);
         application.run(args);
 	}
+```  
+## SpringBoot的打包格式配置  
+jar包：将项目看成一整个拼图，引入的 jar包 就是一个拼块，在项目中引入的依赖就是jar包，里面是编译后的class文件。    
+war包：在 javaweb中通常都是将项目打包成war包再进行部署，里面包括写的代码编译成的class文件，依赖的包，配置文件，所有的页面文件。一个war包可以理解为一个web项目。  
+设置Springboot项目的打包格式可以在pom.xml中设置  
+```xml
+    <groupId>com.xian</groupId>
+    <artifactId>project</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>  //打包的格式在这里设置
+    <name>project</name>
+    <description>Demo project for Spring Boot</description>
+```  
+## 打包war包遇到报错
+```  
+通过Maven导出war包时报错：Failed to execute goal org.apache.maven.plugins:maven-war-plugin:2.2:war (default-war) on project Ocr: Error assembling WAR: webxml attribute is required (or pre-existing WEB-INF/web.xml if executing in update mode) -> [Help 1]  
 ```
+<font color=red>解答：</font>这是系统没有找到 WEB-INF/web.xml文件，所以你需要在项目的main文件夹下，也就是和java的统计目录新建webapp文件夹，再在里面新建WEB-INF文件夹，最后在WEB-INF文件夹下新建web.xml文件，xml文件中不需要配置内容，默认内容就好了。之后执行maven的clean命令，清除之前打包的内容，然后执行package命令，重新打包就可以看到BUILD SUCCESS！
