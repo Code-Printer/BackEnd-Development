@@ -1,5 +1,6 @@
 # Json(JavaScript object notation)
-json是javaScript对象表示的简化，多用于数据的传递和存储，json比xml更小更快、更易解析  
+json是javaScript对象表示的简化，多用于数据的传递和存储，json比xml更小更快、更易解析   
+目前企业普遍在使用的是Apache下的jackson，主要用于解决序列化和反序列化问题
 
 ## JSON的数据格式  
 json是由{键值对表示的，其中键可以用双引号，值的类型有数组[]，对象｛｝，数字，字符串，null}  
