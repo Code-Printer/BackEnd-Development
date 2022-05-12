@@ -17,7 +17,7 @@ public void test() throws IOException {
     System.out.println(user);
 }
 ```  
-### java对象转json数据  
+### java对象转json数据   
 1、需要构建映射对象（ObjectMapper）  
 2、使用转换方法(writeValue、writeValueAsString)  
 ```java
