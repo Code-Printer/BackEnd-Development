@@ -34,9 +34,9 @@ public void test() throws IOException {
 	/* 转换方法：
 	writeValue(参数1，obj):
 	    参数1：
-	    File：将obj对象转换为JSON字符串，并保存到指定的文件中
-	    Writer：将obj对象转换为JSON字符串，并将json数据填充到字符输出流中
-	    OutputStream：将obj对象转换为JSON字符串，并将json数据填充到字节输出流中
+	    File：将JSON字符串保存到指定的文件中
+	    Writer：将JSON字符串填充到字符输出流中
+	    OutputStream：将JSON字符串填充到字节输出流中
 	writeValueAsString(obj):将对象转为json字符串
 	*/
 	String json = mapper.writeValueAsString(user);
