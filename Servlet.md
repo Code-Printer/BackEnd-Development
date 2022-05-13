@@ -1,5 +1,5 @@
 ## Servlet(服务程序)
-Servlet、Filter(过滤器)、Listener(监听器)是javaWeb的三大组件。Servlet是运行在服务器端的java程序，可以接受客户端的请求，并返回数据给客户端。  
+Servlet、Filter(过滤器)、Listener(监听器)是javaWeb的三大组件。Servlet是运行在服务器端的java程序，接受客户端请求，返回服务器数据给客户端。  
 ### 手动创建一个Servlet程序
 访问页面路径为：http://localhost:8080/ServletProgram/hello。  其中http:// 表示该Web页面采用http(应用层的协议)协议，localhost表示的服务器(ip)地址，:8080表示服务器(Tomcat)的端口号，ServletProgram表示的是工程路径，hello表示的是资源路径。  
 
@@ -35,7 +35,7 @@ web项目下web.xml文件的配置解析：
 
 ### 表单提交方式get与post的区别：
 1.get是从服务器上获取数据，post是向服务器传送数据。  
-2.get是把参数数据队列加到提交表单的action属性所指的url中，值和表单内各个字段一一对应，在url中可以看到。post是通过HTTP的post机制，将表单内各个字段与其内容放置在HTML header中一起传送到action属性所指的url地址，用户是看不到这个过程的。  
+2.get是把参数数据队列加到提交表单的action属性所指的url中，值和表单内各个字段一一对应，在url中可以看到。post是通过HTTP的post机制，将表单内各个字段与其内容放置在请求体中一起传送到action属性所指的url地址，用户是看不到这个过程的。  
 3.对于get方式，服务器端用Request.QueryString获取变量的值，对于post方式，服务器端用Request.Form获取提交的数据。  
 4.get传送的数据量较小，不能大于2KB，post传送的数据量较大，一般被默认为不受限制。但理论上，IIS4中最大量为80KB，IIS5中为100KB。  
 5.get安全性非常低，post安全性较高
