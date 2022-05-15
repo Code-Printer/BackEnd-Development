@@ -30,7 +30,9 @@ Spring Boot 通过@EnableAutoConfiguration开启自动装配，再通过SpringFa
 ## BeanFactory和ApplicationContext的区别  
 BeanFactory是Spring的最底层接口，包含bean的定义，管理bean的加载、实例化，控制bean的生命周期，每次获取对象时才会创建对象。通常以编程的方式创建。
 ApplicationContext是BeanFactory的子接口，扩展了很多高级特性(同时加载多个配置文件、统一的资源访问方式)，每次容器启动时就会创建所有的对象。可以以声明的方式创建。
-
+## BeanFactoryPostProcessor与BeanPostProcessor的区别  
+BeanFactoryPostProcessor：在**实例化bean之前(在调用bean的构造函数创建对象之前)**，可以拿到bean的定义信息并修改它，比如修改bean的属性值或向bean容器中注入其他bean的定义信息。**处理对象的是整个bean工厂。**  
+BeanPostProcessor：在**实例化bean之后，初始化bean之前或之后(此时bean已经完成了实例化)**，修改bean的实例化信息，比如生成一个动态代理对象。**处理对象是单个bean。**
 ## Spring的类中引用类型属性的赋值装配方式  
 1、no：默认的方式是不进行自动装配，通过显式设置bean标签的ref属性来进行装配  
 2、byName：通过参数名自动装配，Spring 容器在配置文件中将bean的autowire属性被设置成byname，之后容器试图装配和该bean的属性具有相同名字的bean。  
