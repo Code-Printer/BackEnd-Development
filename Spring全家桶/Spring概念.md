@@ -28,8 +28,11 @@ Spring框架中在A类中引用B类，在B类中引用A类。此时如果获取A
 自动装配：在springboot中使用少量注解和配置即可使用引入的依赖功能  
 Spring Boot 通过@EnableAutoConfiguration开启自动装配，再通过SpringFactoriesLoader最终加载META-INF/spring.factories中的自动配置类，实现自动装配。(自动配置类是通过@Conditional按需加载的配置类的)，想要其生效必须引入spring-boot-starter-xxx包实现起步依赖。  
 ## BeanFactory和ApplicationContext的区别  
-BeanFactory是Spring的最底层接口，包含bean的定义，管理bean的加载、实例化，控制bean的生命周期，每次获取对象时才会创建对象。通常以编程的方式创建。
-ApplicationContext是BeanFactory的子接口，扩展了很多高级特性(同时加载多个配置文件、统一的资源访问方式)，每次容器启动时就会创建所有的对象。可以以声明的方式创建。
+BeanFactory是一个负责生产和管理bean的工厂接口，提供一个SpringIOC的容器规范，只有在获取时才会创建该bean对象。
+ApplicationContext是BeanFactory的子接口，扩展了很多高级特性(同时加载多个配置文件、统一的资源访问方式)，每次容器启动时就会创建所有的对象。可以以声明的方式创建。   
+## BeanFactory与FactoryBean的区别  
+BeanFactory是一个负责生产和管理bean的工厂接口，提供一个SpringIOC容器规范。    
+FactoryBean是一个bean，Spring提供创建bean实例的另一种方式(通过重写getObject方法改写获取bean的实例对象内容)。  
 ## BeanFactoryPostProcessor与BeanPostProcessor的区别  
 BeanFactoryPostProcessor：在**实例化bean之前(在调用bean的构造函数创建对象之前)**，可以拿到bean的定义信息并修改它，比如修改bean的属性值或向bean容器中注入其他bean的定义信息。**处理对象的是整个bean工厂。**  
 BeanPostProcessor：在**实例化bean之后，初始化bean之前或之后(此时bean已经完成了实例化)**，修改bean的实例化信息，比如生成一个动态代理对象。**处理对象是单个bean。**
