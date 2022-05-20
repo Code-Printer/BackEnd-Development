@@ -7,9 +7,9 @@
 ### 多台服务器master与slave的对应关系  
 ![result](https://static01.imgkr.com/temp/971d021c0372422085b2951070457d35.png)  
 
-1、主从复制即将master服务器上的数据备份到slave上  
-2、一个master可以有多个slave，一个slave只能有一个master  
-3、master主要负责写数据，然后将改变的数据自动同步到slave上；slave主要负责读数据  
+1、主从复制即将master服务器上的数据备份到slave上；  
+2、一个master可以有多个slave，一个slave只能有一个master；  
+3、master主要负责写数据，然后将改变的数据自动同步到slave上；slave主要负责读数据。  
 ### 主从复制的好处  
 1、提高服务器的读写负载能力：使用读写分离策略，master负责写，slave负责读  
 2、负载均衡：slave分担master负载，并可以根据需求改变slave的数量，提高系统的并发量(同时可读操作数)和数据吞吐量  
