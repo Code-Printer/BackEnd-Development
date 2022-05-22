@@ -2,7 +2,7 @@
 现实场景下数据量的爆发式增长和数据类型的复杂化，依靠传统的关系型数据库无法解决，非关系型数据库应运而生。
 ## 特点
 (1) 支持数据的持久化(两种策略持久化到硬盘：RDB和AOF)，可以将数据保存在磁盘中，重启之后可以再次加载到内存中使用。    
-(2) Redis支持多种数据类型，支持String、list、set、zset、hash等数据结构。  
+(2) Redis的value支持多种数据类型，支持String、list、set、zset、hash等数据结构。  
 (3) 高速的读写能力，一秒11万次的读或8万次的写  
 
 ## Redis的五大数据结构及应用场景  
@@ -16,7 +16,7 @@ session共享(在分布式系统中，由于多台服务器，请求转发的每
 应用场景：  
 消息队列(使用lpush+brpop命令实现阻塞队列)  
 分页查询(如果数据保存在缓存中可以使用list数据结构，联合命令：lrange key 0 19每页20条分页获取)  
-3、Hash：是一个String类型的Filed以及value的映射表，类似于Java的Map(格式{hash1：{name:"zhangsan",age:20}，hash2:{name:"lisi",age:23}....)  
+3、Hash：value是一个个Filed的Map表，类似于Java的Map(格式{hash1：{name:"zhangsan",age:20}，hash2:{name:"lisi",age:23}....)  
 应用场景：  
 存储用户信息、订单信息  
 购物车功能(使用用户id作为缓存key，商品编码skucode作为hashkey，商品信息作为hashValue)  
@@ -60,9 +60,13 @@ session共享(在分布式系统中，由于多台服务器，请求转发的每
 4、dbsize查看当前数据库key的数量  
 5、key * 查看数据库所有的key  
 6、flushdb清空当前数据库  
-7、flushall清空所有数据库  
-8、Redis中所有数据库使用同一个密码，默认没有密码，Redis认为安全层面应该由Linux来保证  
-9、Redis的默认端口6379   
+7、flushall清空所有数据库    
+8、expire key 过期时间(s)  //设置键的过期时间  
+9、exists key  //判断当前数据库是否存在该key  
+10、move key 当前数据库号  //从当前数据库移出该key  
+11、type key  //判断key的类型
+11、Redis中所有数据库使用同一个密码，默认没有密码，Redis认为安全层面应该由Linux来保证  
+12、Redis的默认端口6379   
 ## Redis数据库的存储空间  
 ![result](https://static01.imgkr.com/temp/1817f0eba0694fd69b22e6f9b097868c.png)  
 
@@ -74,22 +78,64 @@ session共享(在分布式系统中，由于多台服务器，请求转发的每
 ### 2、String  
 一个key对应一个value；String可以包含任何数据，比如jpg图片等；String是Redis最基本的数据类型，一个String的value最大可支512M。   
 ![result](https://static01.imgkr.com/temp/d5b6fd08bb544b79aa66d45266509b39.png)  
-![result](https://static01.imgkr.com/temp/7b5a5a94b90740838ff5b47d165f959a.png)  
-### 3、List  
+![result](https://static01.imgkr.com/temp/7b5a5a94b90740838ff5b47d165f959a.png)    
+```
+1、GETRANGE key start end //获取指定key的value长度内容    
+2、String数据格式使用set创建value字符串 
+```
+### 3、List(可作为消息队列也可作栈)  
 底层是一个字符串链表；可以从头或尾添加元素  
 ![result](https://static01.imgkr.com/temp/d7e3006a20d44a5ea852ea4d50f450b4.png)  
-![result](https://static01.imgkr.com/temp/df7669a12499461bae72a17549512342.png)  
+![result](https://static01.imgkr.com/temp/df7669a12499461bae72a17549512342.png)   
+```
+1、Lrem key count value //移出列表中的指定值并移出指定个数  
+2、Lset key index value  //向已存在列表的长度范围内的指定位置插入值，列表不存在或索引超出当前长度都会报错  
+3、list列表使用Lpush/Rpush创建value列表
+```
 ### 4、Set  
 底层通过HashTable实现；是String类型的无重复值的无序集合  
 ![result](https://static01.imgkr.com/temp/661e5f1cd7114a2395f6f6905904b7e3.png)  
-![result](https://static01.imgkr.com/temp/910818f2af884b72872a52e53963cf6c.png)  
+![result](https://static01.imgkr.com/temp/910818f2af884b72872a52e53963cf6c.png)    
+```
+1、set通过Sadd创建value的set集合
+2、set可以实现统计集合的交集、并集和差集
+```
 ### 5、Zset (有序集合)  
 每个元素都会关联一个double类型的分数(score)；Redis通过分数自动的为集合中的 成员进行从小到大的排序；成员不可重复，分数可以重复  
-![result](https://static01.imgkr.com/temp/5486c49180e54f20aa61442e03394de0.png)  
+![result](https://static01.imgkr.com/temp/5486c49180e54f20aa61442e03394de0.png)    
+```
+1、Zset使用Zadd来创建key-value的zset集合  
+2、ZRANGEBYSCORE key -inf +inf  //查询特定key的zset的value，并从小到大的排序
+```
 ### 6、Hash表  
-类似Java中的HashMap<String, Object>；是一个键值对集合；适合存储对象   
-![result](https://static01.imgkr.com/temp/c826a01509d74fa3b03efd8df23ea0e3.png)   
+类似Java中的HashMap<Str ing, Object>；是一个键值对集合；适合存储对象    
+![result](https://static01.imgkr.com/temp/c826a01509d74fa3b03efd8df23ea0e3.png)    
+```
+Hash使用Hset来创建key-value的hash表
+```  
+### 7、geospatial地理空间  
+应用：附近的人、地图定位  
+低层地理位置的数据结构通过zset实现，故也可以通过zset命令操作该geo集合；存储地理信息编码通过geoHash实现(将三维展开成二维，进行位置分块编码)。  
+![](https://mrggz.oss-cn-hangzhou.aliyuncs.com/img/202205221211359.png?x-oss-process=style/null)
 
+### 8、HyperLogLog(去重计算约值基数)    
+应用：统计网站的用户访问量。  
+HyperLogLog的特点是即使需要统计的元素很多很大，但计算基数的内存空间总是一定且很小，并会进行集合去重。但它计算的是大约值，并不精确。   
+```
+1、PFADD key element1 [element2] //添加元素到指定key的HyperLogLog集合中，会自动去重    
+2、PFCOUNT key [key1] //统计指定key的成员数  
+3、PFMERGE newKey oldKey1 oldKey2[oldKey3]//合并多个key的集合
+```  
+### bitMap(二进制字符串)  
+应用：统计活跃用户、用户签到、两个状态信息统计的    
+bitMap实际上是由0或1构成的字符串，表示某个元素的某个状态。   
+```
+1、setbit key 位置 0/1的值  //设置key的某一位的值为0或1  
+2、get key 位置  //获取key的某一位的值  
+3、bitcount key //获取指定key中的value中为1的个数  
+4、bitpos key 0/1 start end //查看对应key的value中从start到end范围内0或1的个数  
+5、bitop 位操作 key1 key2 key3 [...]  //对多个key进行位元操作，结果保留到key1上  
+```
 ### ubuntu上在redis客户端通过操作命令操作Redis的服务器  
 1、命令行开启redis客户端  
 ```
