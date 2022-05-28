@@ -41,14 +41,18 @@ session共享(在分布式系统中，由于多台服务器，请求转发的每
 4、分布式数据共享，如分布式集群架构中的session分离消息队列  
 
 ## 数据持久化存储  
-1、概念：利用磁盘进行数据存储，在特定时间将数据进行恢复的工作。  
+1、概念：redis是内存数据库，如果不将内存中的数据同步到磁盘，一旦服务器进程退出，数据状态全部都会消失，故提供了将数据状态同步到磁盘存储。  
 2、持久化的两种方式  
 (1)快照方式(RDB(Redis DataBase))：将某个时间点的工作状态保存下来，恢复时可直接恢复指定时间点的工作状态。    
 (2)日志方式(AOF(append only file))：将对数据的所有操作过程记录下来，恢复数据时重新执行这些操作。一个基于内存的key-value数据结构的NoSql数据库。  
 
 ## RDB与AOF的选择  
 1、对比    
-![result](https://static01.imgkr.com/temp/4b736ee3579649efb7584289dcc5cc35.png)  
+RDB的优缺点：  
+优点：适合大规模的数据恢复   
+缺点：(1) 基于fork创建子进程，内存产生额外的消耗  
+(2) 宕机带来数据丢失风险(可能某个时间点的数据未保存)    
+AOF的优缺点：  
 
 2、AOF和RDB选择策略   
 ![result](https://static01.imgkr.com/temp/dcaabdb3f8434f04b6ffbad1105c03d2.png)  
@@ -271,7 +275,19 @@ public class JedisTest {
 ```  
 8、Linux中进行测试  
 ![result](https://static01.imgkr.com/temp/233501bf88ef4b1bbc332aaefbb55c7f.png)  
-
+## Redis的配置文件  
+```
+daemonize yes  //以后台方式运行，退出不结束服务进程  
+logfile ""  //日志文件名字
+save 900 1  //如果在900秒内至少有一个key发生了更改就触发一次持久化到.rdb或.aof文件  
+save 300 10 //如果在300秒内至少有10个key发生了更改就触发一次持久化到.rdb或.aof文件  
+save 60 10000 //如果在60秒内至少有10000个key发生了更改就触发一次持久化到.rdb或.aof文件  
+stop-writes-on-bgsave-error yes  //持久化失败后是否继续工作
+maxmemory-policy noeviction //内存到达上限的处理策略
+rdbcompression yes  //是否压缩rdb文件，开启需要消耗cpu资源  
+rdbchecksum yes  //保存rdb文件时，是否进行文件错误校验  
+APPEND(追加) ONLY MODE //aof模式，默认不开启，使用rdb持久化方式
+```
 ## Redis可视化工具  
 1、安装软件  
 ![result](https://static01.imgkr.com/temp/1d9a511ef2c84f5b96a0706c1ddeaded.png)  
@@ -279,35 +295,36 @@ public class JedisTest {
 2、运行软件  
 ![result](https://static01.imgkr.com/temp/c16255bc37e5422cbb600c8bf374e8f4.png)   
 
-## RDB  
+## RDB(redis的默认持久化方式)    
+持久化RDB的操作流程图：在配置文件指定时间间隔内触发一定操作次数将内存中的数据以快照的方式写入到磁盘，当redis服务器再加载时，将在启动目录下加载快照文件rdb直接读入内存。(redis会单独创建(fork)一个子进程进行持久化，将数据写入到一个临时RDB文件中，完成后替换上次的持久化RDB文件。)    
+![](https://mrggz.oss-cn-hangzhou.aliyuncs.com/img/202205282232209.png?x-oss-process=style/null)
 1、对redis.conf配置文件进行修改 (修改配置文件后需要重启Redis)  
 (1) 修改内存中数据保存的文件的名称，默认值为dump.rdb  
 ![result](https://static01.imgkr.com/temp/a35666544369432fbcd8109dd4be4bcb.png)  
 (2) 修改rdb文件保存的目录   
-![result](https://static01.imgkr.com/temp/65f068c6a1af42bb9844f360f2a15768.png)  
-
+![result](https://static01.imgkr.com/temp/65f068c6a1af42bb9844f360f2a15768.png)   
 2、执行save指令即可将内存中的数据保存到/opt/redis-3.0.4/目录的dump.rdb文件中。  
 3、再次启动redis服务即可自动读取rdb文件中的数据并加载到内存。  
 4、save指令工作原理  
 Redis是单线程的，故执行save指令会阻塞其之后的命令的执行(可能多人操作同一个Redis 服务器)，如果要保存的数据较多时，会导致之后的命令长时间阻塞，故一般不使用save指令。  
 5、bgsave指令可以让保存操作在后台执行，让redis服务可以继续执行其之后的指令，使用较多。  
 6、bgsave指令工作原理  
-![result](https://static01.imgkr.com/temp/3c1d20ddf8cd40b4b168570d93121efd.png)  
-
+![result](https://static01.imgkr.com/temp/3c1d20ddf8cd40b4b168570d93121efd.png)   
 7、配置自动保存 (修改配置文件后需要重启Redis)  
 ![result](https://static01.imgkr.com/temp/a8fc0fbaa0fc4ccf8077b68be5b49585.png)   
-
 8、自动保存方式的注意点  
-(1) get操作没有导致key发生变化  
+**(1) get操作没有导致key发生变化**  
 (2) 对存在的key修改才算发生变化  
 (3) set k1 v1，set k1 v1认为key的值发生变化  
 (4) 配置方式执行的是bgsave指令  
 9、RDB两种指令的对比  
 ![result](https://static01.imgkr.com/temp/baea0553db9e4a078d2bf484eaa49695.png)    
-10、RDB缺点  
-(1) 基于快照思想，每次读写都是全部数据，当数据量较大时，效率非常低  
-(2) 基于fork创建子进程，内存产生额外的消耗  
-(3) 宕机带来数据丢失风险(可能某个时间点的数据未保存)  
+10、RDB优缺点  
+优点：  
+适合大规模的数据恢复   
+缺点：      
+(1)创建一个fork创建子进程，用于数据备份，占用内存空间  
+(2)一定时间内如果宕机会有数据丢失风险  
 ## AOF  
 1、AOF:以日志的方式记录每次改变数据的操作命令，重启之后执行AOF中保存的命令恢复数据，较为主流。
 
