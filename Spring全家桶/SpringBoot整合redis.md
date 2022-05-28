@@ -28,13 +28,221 @@ spring.redis.port=6379
         redisConnection.flushDb();
     }
 ```  
-5. 自定义对象序列化的RedisTemplate对象  
-```java
+5. 定义支持序列化的对象和自定义通用的RedisTemplate对象，定义其序列化对象的方式    
+```java  
+//实现序列化接口，支持对象可被序列化
+public class User implements Serializable{
+    public String name;
+    public int age;
 
+}
+```
+```java
+@Configuration
+public class RedisConfig {
+
+    //编写通用的redisTemplate模板
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) throws UnknownHostException {
+        //为了开发方便，一般redis使用的键值对数据类型为<String,Object>
+        RedisTemplate<String, Object> template = new RedisTemplate();
+        template.setConnectionFactory(redisConnectionFactory);
+
+        //json的序列化配置
+        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+        jackson2JsonRedisSerializer.setObjectMapper(om);
+        //String的序列化配置
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+
+        template.setKeySerializer(stringRedisSerializer);  //设置key的序列化采用String方式
+        template.setHashKeySerializer(stringRedisSerializer); //设置Hashkey的序列化采用String方式
+        template.setValueSerializer(jackson2JsonRedisSerializer); //设置redis的value序列化采用jackson的方式
+        template.setHashValueSerializer(jackson2JsonRedisSerializer); //redistemplate的Hashvalue默认使用jdk的序列化方式，这里改用jackson的方式
+        template.afterPropertiesSet();
+        return template;
+    }
+}
 ```
 6. 封装自己的RedisUtils  
 ```java
+@Component
+public class RedisUtils {
+    @Autowired
+    private RedisTemplate redisTemplate;
 
+    /**
+     * 设置key的缓存过期时间
+     * @param key
+     * @param time
+     * @return
+     */
+    public boolean expire(String key,long time){
+        try{
+            if (time > 0){
+                redisTemplate.expire(key,time, TimeUnit.SECONDS);
+            }
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 根据key获取key的缓存过期时间
+     */
+
+    public long getExpire(String key){
+        return redisTemplate.getExpire(key,TimeUnit.SECONDS);
+    }
+
+    /**
+     * 判断key是否存在
+     */
+
+    public boolean hasKey(String key){
+        try{
+            return redisTemplate.hasKey(key);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     *根据key删除缓存
+     */
+    public void del(String... key){
+        if (key != null && key.length > 0){
+            if (key.length == 1){
+                redisTemplate.delete(key);
+            }else{
+                redisTemplate.delete(CollectionUtils.arrayToList(key));
+            }
+        }
+    }
+
+    /**
+     * 根据key获取缓存值
+     */
+    public Object get(String key){
+        return key == null ? null : redisTemplate.opsForValue().get(key);
+    }
+
+    /**
+     * 存入缓存
+     */
+
+    public boolean set(String key,Object value){
+        try{
+            redisTemplate.opsForValue().set(key,value);
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 缓存放入并设置有效时间
+     */
+    public boolean set(String key, Object value,long time){
+        try{
+            if (time > 0){
+                redisTemplate.opsForValue().set(key,value,time);
+            }else{
+                set(key,value);
+            }
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 值递增
+     */
+    public long incr(String key,long delta){
+        if (delta < 0){
+            throw new RuntimeException("递增因子须大于0");
+        }
+        return redisTemplate.opsForValue().increment(key,delta);
+    }
+
+    /**
+     * 值递减
+     * delta 减的值
+     */
+
+    public long decr(String key,long delta){
+        if (delta < 0){
+            throw new RuntimeException("递减因子须大于0");
+        }
+        return redisTemplate.opsForValue().increment(key,-delta);
+    }
+
+    /**
+     * 获取Hash数据类型的item的值
+     */
+    public Object hget(String key,String item){
+        return redisTemplate.opsForHash().get(key,item);
+    }
+
+    /**
+     * 获取key对应的hash集合
+     */
+    public Map<String,Object> hmget(String key){
+        return redisTemplate.opsForHash().entries(key);
+    }
+
+    /**
+     * 根据键设置一个hash集合类型的value
+     */
+
+    public boolean hmset(String key,Map<String,Object> map){
+        try{
+            redisTemplate.opsForHash().putAll(key,map);
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * HashSet设置缓存时间
+     */
+    public boolean hmset(String key,Map<String,Object> map,long time){
+        try{
+            redisTemplate.opsForHash().putAll(key,map);
+            if (time > 0){
+                expire(key,time);
+            }
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 在对应key的hash集合中存放hash对
+     */
+    public boolean hset(String key,String filed,Object value){
+        try{
+            redisTemplate.opsForHash().put(key,filed,value);
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+}
 ```
 ### SpringBoot2.x之后将原本的Jedis替换成了lettuce  
 jedis采用直连，需要使用jedis连接池，避免多线程操作的不安全性，更像BIO的方式  
