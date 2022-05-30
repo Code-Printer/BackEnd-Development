@@ -368,12 +368,12 @@ redis的发布订阅是一种消息队列模式:发布者发送消息到队列�
 用于构建实时的通信应用，如实时广播、实时聊天室。   
 ![](https://mrggz.oss-cn-hangzhou.aliyuncs.com/img/202205301530491.png?x-oss-process=style/null)  
 测试：  
-订阅端  
+订阅端   
 ```bash
 redis-cli -p 6379 //打开一个redis客户端作为订阅端  
 >subscribe 频道名  //进入订阅监听频道阶段
 ```  
-发布端  
+发布端   
 ```bash
 redis-cli -p 6379 //打开一个redis客户端作为订发布端  
 >publish 频道名 消息体  //从指定频道发布消息内容
