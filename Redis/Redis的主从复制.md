@@ -1,4 +1,4 @@
-# 主从复制  
+# 主从复制(集群的基础)  
 ## 主从复制概念  
 为了避免单点Redis服务器故障，准备多台服务器，进行分布式主从部署。将主服务器master数据<font color='white'>复制</font>多个副本保存在副服务器slave上，连接在一起，并保证数据是<font color='white'>同步</font>的；好处是即使有其中一台服务器宕机，其他服务器依然可以继续提供服务，实现Redis的高可用，同时实现数据备份。  
 ### 多台服务器master与slave的对应关系  
@@ -6,19 +6,18 @@
 
 1、主从复制即只能将主机master服务器上的数据单向备份到从机slave上；  
 2、一个master可以有多个slave，一个slave只能有一个master；  
-3、master负责写数据为主，然后将改变的数据自动同步到slave上；slave负责读数据为主。  
+3、master负责**写数据**，然后将改变的数据自动同步到slave上；slave负责**读数据**。  
 ### 主从复制的好处  
 1、负载均衡：提高服务器的读写负载能力：使用读写分离策略，master负责写，slave负责读   
-2、故障恢复：当master出现故障时，slave可以转变成master提供服务(哨兵机制)。  
-3、数据备份：slave会备份master的数据  
-4、高可用(集群)：基于主从复制，构建分布式哨兵和集群模式，实现Redis高可用。  
+2、数据备份：slave会备份master的数据  
+3、高可用(集群)：基于主从复制，构建分布式哨兵和集群模式，实现Redis高可用。  
 ## Redis主从复制步骤  
 ![result](https://static01.imgkr.com/temp/0dca3657cbcc4ba8a41d0e639784069b.png)   
 
 ## 主从复制流程   
-1、建立连接：从机slave主动连接主机master   
-2、数据同步：master将数据同步到第一次连接自己的slave服务器上   
-3、命令传播：master的数据变化多次同步到slave上   
+1、建立连接：从机slave主动连接主机master，发送同步指令到主机   
+2、数据同步：主机master接收到指令，使用RDB方式将数据全量复制同步到连接自己的slave服务器上   
+3、增量复制：主机master通过aof将改变数据的命令依次同步到slave从机上   
 ![result](https://static01.imgkr.com/temp/7d1555593ab24a7880a5a988d19994ff.png)  
 
 ### 建立连接  
@@ -70,6 +69,12 @@
 ```
 >info replication  //查看当前redis服务器信息
 ```
-搭建三个从机slaver和一个主机master：
+搭建两个从机slaver和一个主机master：
 1、复制三个redis.config文件，修改每个配置文件的内容(重点修改端口号、pid、log文件名、dump.rdb名)  
-2、使用redis-server 配置文件命令，分别在三个窗口启动三个从机
+2、使用redis-server 配置文件的命令，分别在三个窗口启动三个redis服务器，并使用redis客户端连接服务器，此时三台都是主机master，需要配置其中的两台为从机slave    
+3、在其中的两台客户端上使用如下命令指定主机地址和端口号，当前服务器自动变为从机slave      
+```
+slaveof host port
+```
+4、真实的开发场景中是在配置文件中配置从机的配置文件  
+![](https://mrggz.oss-cn-hangzhou.aliyuncs.com/img/202205311047625.png?x-oss-process=style/null)  
