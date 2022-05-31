@@ -8,23 +8,21 @@
 2、一个master可以有多个slave，一个slave只能有一个master；  
 3、master负责写数据为主，然后将改变的数据自动同步到slave上；slave负责读数据为主。  
 ### 主从复制的好处  
-1、提高服务器的读写负载能力：使用读写分离策略，master负责写，slave负责读  
-2、负载均衡：slave分担master负载，并可以根据需求改变slave的数量，提高系统的并发量(同时可读操作数)和数据吞吐量  
-3、快速故障恢复：当master出现故障时，slave可以转变成master提供服务(哨兵机制)。  
-4、数据备份：slave会备份master的数据  
-5、高可用：基于主从复制，构建分布式哨兵和集群模式，实现Redis高可用。  
+1、负载均衡：提高服务器的读写负载能力：使用读写分离策略，master负责写，slave负责读   
+2、故障恢复：当master出现故障时，slave可以转变成master提供服务(哨兵机制)。  
+3、数据备份：slave会备份master的数据  
+4、高可用(集群)：基于主从复制，构建分布式哨兵和集群模式，实现Redis高可用。  
 ## Redis主从复制步骤  
-![result](https://static01.imgkr.com/temp/0dca3657cbcc4ba8a41d0e639784069b.png)  
+![result](https://static01.imgkr.com/temp/0dca3657cbcc4ba8a41d0e639784069b.png)   
 
-
-## 主从复制流程  
+## 主从复制流程   
 1、建立连接：从机slave主动连接主机master   
 2、数据同步：master将数据同步到第一次连接自己的slave服务器上   
 3、命令传播：master的数据变化多次同步到slave上   
 ![result](https://static01.imgkr.com/temp/7d1555593ab24a7880a5a988d19994ff.png)  
 
 ### 建立连接  
-1、建立slave到master的连接，使master能够识别slave，并保存slave端口号  
+1、建立slave到master的连接，使master能够识别slave，并保存slave端口号   
 2、流程图如下：  
 ![result](https://static01.imgkr.com/temp/e11d314bad2948f1873845176aef8a19.png)    
 此时状态：slave保存master的地址与端口，master保存slave的端口，二者可以通信。  
@@ -53,8 +51,8 @@
 (1)、服务器的运行id (run id)：服务器运行ID是每一台服务器每次运行的身份识别码，一台服务器多次运行可以生成多个运行id。作用是运行id用于在服务器间进行传输时识别身份。 
 (2)、主服务器的复制积压缓冲区：是一个先进先出的队列，用于存储服务器执行过的变更数据的命令，每次传播命令，master都会将待传播的命令记录下来，并存储在复制缓冲区  
 (3)、主从服务器的复制偏移量：一个数字，描述复制缓冲区中的指令字节位置，分为master复制偏移量(发给所有slave的指令字节位置)和slave复制偏移量(记录slave接收master发送过来的指令字节对应的位置)    
-## 心跳机制  
-命令传播阶段后，master与slave间需要进行信息交换，使用心跳机制进行维护。  
+## 心跳机制   
+命令传播阶段后，master与slave间需要进行信息交换，使用心跳机制进行维护。   
 ### master心跳  
 1、指令：PING  
 2、周期：由配置文件中repl-ping-slave-period参数决定，默认10秒   
@@ -67,4 +65,11 @@
 ### 注意事项  
 1、当slave多数掉线或者延迟过高时，master为了保证数据稳定性，将会拒绝所有信息的同步操作。  
 2、slave的数量和延迟信息通过向mater发送 REPLCONF ACK 指令告知master    
-3、通过两个参数设置(min-slaves-to-write 2;min-slaves-max-lag 8(表示当slave个数少于2个，或者所有slave的延迟都大于等于8秒时，强制关闭master写功能，停止数据同步))
+3、通过两个参数设置(min-slaves-to-write 2;min-slaves-max-lag 8(表示当slave个数少于2个，或者所有slave的延迟都大于等于8秒时，强制关闭master写功能，停止数据同步))  
+## 主从复制实战环境配置    
+```
+>info replication  //查看当前redis服务器信息
+```
+搭建三个从机slaver和一个主机master：
+1、复制三个redis.config文件，修改每个配置文件的内容(重点修改端口号、pid、log文件名、dump.rdb名)  
+2、使用redis-server 配置文件命令，分别在三个窗口启动三个从机
