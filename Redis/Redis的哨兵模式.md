@@ -5,16 +5,18 @@
 ![result](https://static01.imgkr.com/temp/383c2fe864f94026bbdb6348f1994010.png)  
 ### 哨兵的作用(故障转移：主机故障时，选举新的主机)   
 1、监控：监控master是否存活(宕机)，监控slave的运行情况(服务器地址、端口号、偏移量、运行id...)。  
-2、通知：当被监控的某一服务器出现问题时，及时通知其他哨兵和服务器  
+2、通知：当被监控的某一服务器出现问题时，及时通知其他哨兵和服务器   
 3、故障转移：当master出现宕机时，通过投票选举从slave中选出新的master，将其他的slave连接到新的master，并告知客户端新的master地址。(一般哨兵的数量为单数，方便投票)  
 ### 服务器启用哨兵  
-1、修改哨兵的配置文件 sentinel.conf ，配置文件位于Redis目录下，如下图所示：  
-![result](https://static01.imgkr.com/temp/d68e568a316443ba9f8dfc9975345980.png)    
+1、复制原有解压后redis文件夹下的sentinel.conf文件到redis的默认安装路径下的配置文件夹中，修改哨兵的配置文件内容，如下图所示：      
 ![result](https://static01.imgkr.com/temp/df82ee33fcb444768dbb60f9b155fb81.png)  
 部分配置的含义如下图所示：  
 ![result](https://static01.imgkr.com/temp/34fc6d4d406b4fee9fdd6a05fad8ba71.png)  
-2、启动哨兵(redis-sentinel filename)     
-filename指的是配置文件名，每个哨兵都要配置自己的配置文件, 配置并启动哨兵之后，主服务器宕机之后，会自动的执行投票、主从切换等过程。  
+2、启动哨兵   
+在一个新的窗口中(进程)运行如下命令启动一个哨兵。  
+```
+redis-sentinel filename  //filename指的是配置文件名，每个哨兵都要配置自己的配置文件,
+``` 
 ### 哨兵原理  
 哨兵在进行主从切换过程中主要经过三个阶段：监控-通知-故障转移  
 1、监控阶段：信息同步  
@@ -25,7 +27,7 @@ filename指的是配置文件名，每个哨兵都要配置自己的配置文件
 (3):选举人哨兵决定新的master
 (4):将slave与新的master连接，原master恢复之后作为slave连接到新master。  
 #### 监控  
-同步各节点的状态信息，这些节点包括master(获取master的状态信息，主要是获取slave和已有的哨兵信息)、slave(运行id、角色slave、master主机号和端口号、偏移量)、哨兵(新添加的哨兵与已存在哨兵进行信息同步)。  
+同步各节点的状态信息，这些节点包括master(获取master的状态信息，主要是获 取slave和已有的哨兵信息)、slave(运行id、角色slave、master主机号和端口号、偏移量)、哨兵(新添加的哨兵与已存在哨兵进行信息同步)。  
 具体的工作流程原理如下图：  
 ![result](https://static01.imgkr.com/temp/aaafb7edc10e4a599d85babb00a0ca17.png)  
 1、哨兵1向master发送info指令之后，会建立一个cmd连接，创建的连接是用来发送命令的。  
