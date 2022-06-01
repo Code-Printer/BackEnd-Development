@@ -17,7 +17,7 @@
 8、对值为key的集合进行排序  
 ![result](https://static01.imgkr.com/temp/56ee976b3a3847a0ba8e6942d091cce4.png)  
 
-## Redis的实例运用Jedis  
+## Redis的实例运用(使用Jedis工具包)  
 1、在maven项目中引入依赖  
 ```xml
 <dependency>
