@@ -128,7 +128,7 @@ person.dog.name=${person.last-name:wanghuahu} //初始值是wanghuahu
 person.dog.age=15
 ```  
 ### @Conditional注解  
-作用：必须满足@Conditional指定的条件，才给容器中添加组件。
+作用：必须满足@Conditional指定的条件，才注入到容器中。
 
 | @Conditional派生注解                | 作用（判断是否满足当前指定条件）               |
 | ------------------------------- | ------------------------------ |
