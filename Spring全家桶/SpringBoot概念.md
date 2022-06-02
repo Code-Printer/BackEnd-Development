@@ -1,10 +1,12 @@
-## Springboot  
+## Springboot(微服务架构)  
 ### SpringBoot与Spring的区别  
-SpringBoot与Spring相比简化了配置(可以快速搭建项目),集成了许多框架(避免框架间的版本冲突)  
-SpringBoot的缺点：版本迭代快，无需配置导致的出错无法定位。  
+SpringBoot与Spring相比简化了配置(可以快速搭建项目),集成了许多框架(避免框架间的版本冲突)，使用时在pom文件中引入该框架即可。  
+SpringBoot的缺点：无需配置导致的出错无法定位。  
 ### SpringBoot与SpringMVC的区别  
 SpringMVC提供一种轻度耦合的方式开发web应用。  
 SpringBoot实现了自动配置，无需xml文件手动配置，降低了项目搭建的复杂度。
+### SpringBoot的自动装配原理  
+springboot的自动装配就是通过自定义实现的ImportSelector接口，从而导致项目启动时会自动将所有项目META-INF/spring.factories路径下的配置类注入到spring容器中，从而实现了自动装配。
 ### SpringBoot的常用注解及作用  
 #### @SpringBootApplication
 这个注解是Spring Boot最核心的注解，用在Spring Boot的主类上，标识这是一个Spring Boot应用，用来开启Spring Boot的各项能力。实际上这个注解是@Configuration,@EnableAutoConfiguration,@ComponentScan三个注解的组合。  
@@ -29,8 +31,7 @@ SpringBoot实现了自动配置，无需xml文件手动配置，降低了项目�
 ### SpringBoot开启事务(事务(ACID)：要么都执行，要么都不执行)  
 1、在主类(Main)使用注解@EnableTransactionManagement开启事务  
 2、在访问数据库的service方法上添加注解@Transactional即可  
-### SpringBoot的自动装配原理  
-springboot的自动装配就是通过自定义实现的ImportSelector接口，从而导致项目启动时会自动将所有项目META-INF/spring.factories路径下的配置类注入到spring容器中，从而实现了自动装配。   
+   
 ### @RequestParam与@RequestBody的区别  
 @RequestParam后台接收的参数在请求头中，就是请求路径url中，只能用来接收get请求。    
 @RequestBody后台接收的参数在请求体中，只能用来接收post请求。  
