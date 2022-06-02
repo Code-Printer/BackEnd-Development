@@ -24,7 +24,7 @@ public class SpringbootestApplication {
 ### 修改banner的内容  
 1、通过配置修改banner的内容。首先访问一下网站,输入文本，生成相应的banner。    
 ```properties  
-http://patorjk.com/software/taag/#p=display&f=Graffiti&t=demo
+https://www.bootschool.net/ascii
 ```
 2、在resource目录下新建banner.txt，并将上面内容复制到文件中。最后在resource/application.properties文件中添加以下配置内容：
 ```properties  
