@@ -7,7 +7,7 @@ SpringMVC提供一种轻度耦合的方式开发web应用。
 SpringBoot实现了自动配置，无需xml文件手动配置，降低了项目搭建的复杂度。
 ### SpringBoot的常用注解及作用  
 #### @SpringBootApplication
-这个注解是Spring Boot最核心的注解，用在 Spring Boot的主类上，标识这是一个Spring Boot应用，用来开启Spring Boot的各项能力。实际上这个注解是@Configuration,@EnableAutoConfiguration,@ComponentScan三个注解的组合。  
+这个注解是Spring Boot最核心的注解，用在Spring Boot的主类上，标识这是一个Spring Boot应用，用来开启Spring Boot的各项能力。实际上这个注解是@Configuration,@EnableAutoConfiguration,@ComponentScan三个注解的组合。  
 #### @EnableAutoConfiguration
 允许Spring Boot自动配置注解，开启这个注解之后，Spring Boot就能根据当前类路径下的包或者类来配置Spring Bean。  
 #### @ComponentScan  
