@@ -6,7 +6,7 @@ SpringBoot的缺点：无需配置导致的出错无法定位。
 SpringMVC提供一种轻度耦合的方式开发web应用。  
 SpringBoot实现了自动配置，无需xml文件手动配置，降低了项目搭建的复杂度。
 ### SpringBoot的自动装配原理  
-springboot的自动装配就是通过自定义实现的ImportSelector接口，从而导致项目启动时会自动将所有项目META-INF/spring.factories路径下的配置类注入到spring容器中，从而实现了自动装配。
+springboot通过自定义实现的ImportSelector接口，从而使项目启动时会自动将项目META-INF(美他因for)下spring.factories里的符合条件的配置类注入到spring容器中，从而实现了自动装配。
 ### SpringBoot的常用注解及作用  
 #### @SpringBootApplication
 这个注解是Spring Boot最核心的注解，用在Spring Boot的主类上，标识这是一个Spring Boot应用，用来开启Spring Boot的各项能力。实际上这个注解是@Configuration,@EnableAutoConfiguration,@ComponentScan三个注解的组合。  
