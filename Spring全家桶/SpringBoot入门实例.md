@@ -267,7 +267,7 @@ public class WebConfigurer implements WebMvcConfigurer{
 ```  
 
 ## 第一章  
-@SpringBootApplication，这个注解放在启动类上，spring容器会自动初始化一些配置信息，扫描bean，初始化bean。  
+@SpringBootApplication，这个注解放在程序的入口启动类上，spring容器会自动初始化一些配置信息，扫描bean，初始化bean。  
 @RestController是基于Restful风格的spring控制类，与@Controller不同的是，@RestController只能返回数据，例如常用的json数据，而@Controller不仅可以返回数据，还可以返回视图，比如我们的jsp页面。  
 @RequestMapping定义的是请求的映射路径。  
 @GetMapping与@RestController是一块的，表示这是个get请求，与@RequestMapping(method = RequestMethod.GET)是一个意思。   
