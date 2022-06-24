@@ -239,11 +239,11 @@ public class Student {
 
 public interface IP{
 }
-@Service("IP1")
+@Bean("IP1")
 public class IP1 implements IP{
 
 }
-@Service("IP2")
+@Bean("IP2")
 public class IP2 implements IP{
 
 }
