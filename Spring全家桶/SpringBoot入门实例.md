@@ -266,14 +266,12 @@ public class WebConfigurer implements WebMvcConfigurer{
 }
 ```  
 
-## 第一章  
+## SpringBoot注解  
 @SpringBootApplication，这个注解放在程序的入口启动类上，spring容器会自动初始化一些配置信息，扫描bean，初始化bean。  
 @RestController是基于Restful风格的spring控制类，与@Controller不同的是，@RestController只能返回数据，例如常用的json数据，而@Controller不仅可以返回数据，还可以返回视图，比如我们的jsp页面。  
 @RequestMapping定义的是请求的映射路径。  
-@GetMapping与@RestController是一块的，表示这是个get请求，与@RequestMapping(method = RequestMethod.GET)是一个意思。   
-## 第二章  
-Freemarker模板引擎：将页面渲染放在客户端进行，当前后端不分离时，页面显示的效率比较好；当前后端分离时，使用模板引擎作用不大。    
-## 第三章 添加Druid数据库连接池源  
+@GetMapping与@RestController是一块的，表示这是个get请求，与@RequestMapping(method = RequestMethod.GET)是一个意思。       
+## 添加Druid数据库连接池源  
 1、在xml文件下  
 ```xml
  <properties>
@@ -306,25 +304,105 @@ spring:
     username: root
     password: root
 ```  
-## 第四章  添加jpa支持
-jpa：是官方提供的ORM规范，将java对象以数据库记录的形式存储到数据库中。Hibernate是基于JPA实现的，JPA用起来简单，碰到复杂的情形，我们一样可以使用原生sql来解决。  
-1、在pom.xml文件添加依赖  
-```xml
- <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
-  </dependency>
-```  
-2、在项目启动类上添加扫描Repository注解  
+ ## SpringBoot实现自定义注解获取URL黑白名单  
+1、创建自定义的免拦截注解ExcludeUrl  
 ```java
-@EntityScan(basePackages = {"org.example"})
-@EnableJpaRepositories(basePackages = {"org.example"})
-public class Application {
+
+/**
+ * @author MrGao
+ * @create 2022-06-26-22:26
+ * @TO DO:自定义一个白名单注解
+ */
+@Documented
+@Target(ElementType.METHOD)  //该注解作用在方法类型上
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ExcludeUrl {
 
 }
 ```
-EntityScan表示扫描带有Entity注解的JPA实体，EnableJpaRepositories扫描带有Repository注解的DAO类。如果basePackages为空，则会将启动类所在的包路径作为根路径。 
+2、定义后端工程的API接口TestController
+```java
+@RestController
+@RequestMapping("/ControllerTest")
+public class TestController {
+    @RequestMapping("/test1")
+    @ExcludeUrl
+    //免拦截注解
+    public String test1(){
+        return "test1";
+    }
 
+    @RequestMapping("/test2")
+    @ExcludeUrl
+    //免拦截注解
+    public String test2(){
+        return "test2";
+    }
+
+    @RequestMapping("/test3")
+    public String test3(){
+        return "test3";
+    }
+
+}
+```
+3、在配置文件中定义自定义注解的扫描包路径  
+```properties
+test.demo.excludeUrlScanPackage=com.xian.selfannotation.controller
+```
+4、写一个工具类在该类中定义一个获取白名单的方法  
+```java
+public class GetBlankList {
+    public static List<String> getWhiteUrl(String packageName){
+        List<String> whiteList = new ArrayList<>();
+
+        //设置扫描包的路径
+        Reflections reflections = new Reflections(
+          new ConfigurationBuilder().setUrls(ClasspathHelper.forPackage(packageName))
+                .setScanners(new MethodAnnotationsScanner())
+        );
+        //扫描带有@ExcludeUrl注解的方法集合
+        Set<Method> methods = reflections.getMethodsAnnotatedWith(ExcludeUrl.class);
+        if (methods != null && !methods.isEmpty()){
+            for (Method method : methods){
+                String[] excludeUrl =  method.getAnnotation(RequestMapping.class).value();
+                //获取声明类上的getMapping注解中的URL
+                String[] valArray = method.getDeclaringClass().getAnnotation(RequestMapping.class).value();
+                String baseUrl = "";
+                if (valArray.length > 0){
+                    baseUrl = valArray[0];
+                }
+                String resultUrl = excludeUrl[0];
+                if (StringUtils.isNotBlank(baseUrl)){
+                    resultUrl = baseUrl + resultUrl;
+                }
+                whiteList.add(resultUrl);
+            }
+        }
+
+        return  whiteList;
+    }
+}
+```
+5、测试类  
+```java
+@SpringBootTest
+class SelfannotationApplicationTests {
+
+    @Value("${test.demo.excludeUrlScanPackage}")
+    private String packageName;
+    @Test
+    void contextLoads() {
+        List<String> whiteUrl = GetBlankList.getWhiteUrl(packageName);
+        for (String each:whiteUrl
+             ) {
+            System.out.println(each);
+        }
+
+    }
+
+}
+```
 
 
 
