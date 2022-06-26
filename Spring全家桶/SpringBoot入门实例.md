@@ -304,7 +304,9 @@ spring:
     username: root
     password: root
 ```  
- ## SpringBoot实现自定义注解获取URL黑白名单  
+## 自定义注解(自己定义的注解)  
+自定义注解可以实现接口的过滤、拦截、请求流量限制、数据源切换等。
+### SpringBoot实现自定义注解获取URL黑白名单实例  
 1、创建自定义的免拦截注解ExcludeUrl  
 ```java
 
