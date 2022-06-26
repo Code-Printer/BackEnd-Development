@@ -315,7 +315,7 @@ spring:
  * @create 2022-06-26-22:26
  * @TO DO:自定义一个白名单注解
  */
-@Documented
+@Documented //这个注解被javadoc工具记录
 @Target(ElementType.METHOD)  //该注解作用在方法类型上
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcludeUrl {
