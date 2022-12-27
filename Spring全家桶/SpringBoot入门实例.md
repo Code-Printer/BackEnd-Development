@@ -1,5 +1,5 @@
 # SpringBoot
-SpringBoot相比Spring简化了配置，内置了许多框架，简化了初始的项目搭建和开发过程。  
+SpringBoot相比Spring简化了配置(所有工具的配置文件都在application.properties)和依赖的导入，内置了许多框架(集成了mybatis、redis等)，简化了初始的项目搭建（一键初始化项目）和开发过程(直接着手于业务开发)。  
 # 微服务架构  
 每个功能都是可以独立替换和升级的软件单元  
 
