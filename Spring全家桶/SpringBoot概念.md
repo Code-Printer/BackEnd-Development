@@ -7,7 +7,8 @@ SpringMVC提供一种轻度耦合的方式开发web应用。
 SpringBoot实现了自动配置，无需xml文件手动配置，降低了项目搭建的复杂度。
 ### SpringBoot的自动装配原理  
 springboot通过自定义实现的ImportSelector接口，从而使项目启动时会自动将项目META-INF(美他因for)下spring.factories里的符合条件的配置类注入到spring容器中，从而实现了自动装配。
-### SpringBoot的常用注解及作用  
+### SpringBoot的常用注解及作用   
+springboot表示该类为组件的五大注解：@bean、@Component、@Controller、@Service、@Repository 
 #### @SpringBootApplication
 这个注解是Spring Boot最核心的注解，用在Spring Boot的主类上，标识这是一个Spring Boot应用，用来开启Spring Boot的各项能力。实际上这个注解是@Configuration,@EnableAutoConfiguration,@ComponentScan三个注解的组合。  
 #### @EnableAutoConfiguration
@@ -15,7 +16,7 @@ springboot通过自定义实现的ImportSelector接口，从而使项目启动�
 #### @ComponentScan  
 组件扫描。让spring Boot扫描Configuration类并把它加入到程序上下文。@ComponentScan注解默认就会装配标识了@Controller，@Service，@Repository，@Component注解的类到spring容器中。  
 #### @Repository  
-用于标注数据访问组件，即DAO层组件。使用@Repository注解可以确保DAO或者repositories提供异常转译(捕获异常后，输出另一个异常(作用在于捕获的如果是底层异常，输出该异常并不能准确表达意思，故需要输出高层可以表意的异常))，这个注解修饰的DAO或者repositories类会被ComponetScan发现并配置，不需要为它们在XML文件中配置项。  
+数据库层组件。使用@Repository注解可以确保DAO或者repositories提供异常转译(捕获异常后，输出另一个异常(作用在于捕获的如果是底层异常，输出该异常并不能准确表达意思，故需要输出高层可以表意的异常))，这个注解修饰的DAO或者repositories类会被ComponetScan发现并配置，不需要为它们在XML文件中配置项。  
 #### @Service  
 这个注解修饰的业务逻辑层的类会被ComponetScan发现并配置，不需要为它们在XML文件中配置项。  
 #### @RestController  
