@@ -208,7 +208,7 @@ person.dog.age=15
 | @ConditionalOnNotWebApplication | 当前不是web环境                      |
 | @ConditionalOnJndi              | JNDI存在指定项  
 ### 自动配置报告  
-在控制台打印自动配置的信息，可以通过在SpringBoot项目的全局配置文件中配置debug=true属性，就可以打印自动配置报告。  
+在控制台打印自动配置的信息，可以通过在SpringBoot项目的application.properties配置文件中配置debug=true属性，就可以打印自动配置报告。  
 ```java
 Positive matches:（启动的，匹配成功的）
 -----------------
@@ -227,7 +227,44 @@ Positive matches:（启动的，匹配成功的）
 ```    
 ### springboot的自动配置原理
 springboot的@springbootApplication注解等价于@SpringbootConfiguration(表明这是一个springboot配置类)、@ComponScan(包扫描注解，表示从哪里导入组件)、@EnableAutoConfiguration(该类中有@AutoConfigurationPackage：表示指定包下的组件、@Import加载系统MENT-INF/spring.factories文件下的自动配置类组件到容器中)
-总结自动配置加载顺序：首先spring容器会按条件加载所有自动配置类xxxAutoConfig下的组件->所有的组件都绑定了一个xxxProperties类，从中获取值->每个xxxProperties都可以通过修改application.properties文件修改默认值。
+总结自动配置加载顺序：首先spring容器会按条件加载所有自动配置类xxxAutoConfig下的组件->所有的组件都绑定了一个xxxProperties类，从中获取值->每个xxxProperties都可以通过修改application.properties文件修改默认值。  
+## lombok依赖  
+lombok依赖提供了@Data、@Slf4j(日志开发注解，不用创建日志对象，直接使用log.xxx打印日志信息)、@ToString、@NoArgsConstructor、@AllArgsConstructor和@EqualsAndHashCode，简化了java Bean组件的开发，类的定义不需要再写set、get、equal、tostring、无参和有参构造器的方法  
+使用实例  
+```
+1、首先在pom配置文件中引入lombok依赖；
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+</dependency>
+2、在setting的插件市场，安装lombok插件；
+3、在bean组件上注解相应注解，就不需要写对应的方法啦；
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@EqualsAndHashCode
+@ConfigurationProperties(prefix = "car")
+public class Car {
+
+    private String brand;
+    private String price;
+
+}
+4、在需要的地方注解lombok提供的@Slf4j注解，简化日志开发
+@Slf4j
+@RestController
+public class HelloController {
+    @Autowired
+    Car car;
+
+    @RequestMapping("/hello1")
+    public Car handle01(){
+        log.info("coming in>>>>>>");
+        return car;
+    }
+}
+```
 ## 日志配置  
 SpringBoot默认使用LogBack日志系统，日志会记录程序中的Error、warn、info(默认使用该级别)、debug、 trace级别的日志信息(日志级别是逐渐降低的，如果日志级别设置为INFO，则低于INFO级别的日志都看不到)，可以用于程序员针对不同情况快速定位程序位置。可以使用LOG.error()(warn、info、debug、trace)方法打印程序中出现的错误信息。  
 1、在SpringBoot项目中添加LogBack日志依赖（一般web项目中在启动器中已经包含该依赖，故可以不添加）  
@@ -256,7 +293,7 @@ public class LogConfig {
 }  
 
 //或使用注解方式
-@Slf4j
+@Slf4j  //这是lombok依赖提供的log注解
 @Configuration
 public class LogConfig {
 
