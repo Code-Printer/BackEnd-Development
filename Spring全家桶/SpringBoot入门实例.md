@@ -337,7 +337,7 @@ logging:
 ```  
 ## springboot的静态资源访问  
 默认springboot的静态资源放到resources/static或resources/public或resources/resources或resources/META-INF/resources目录下，就可以通过根路径+静态资源文件名被访问到。  
-请求处理的过程是：首先容器接收请求后，先看controller有没有该API，如果没有再交给静态资源处理器，寻找静态资源下的文件名，如果也找不到就返回404。  
+请求处理的过程是：首先容器接收请求后，先看动态资源controller有没有该API，如果没有再交给静态资源处理器，寻找静态资源下的文件名，如果也找不到就返回404。  
 修改静态资源的访问路径和静态资源处理器的寻找目录：
 ```yml
 #修改静态资源的访问路径，更改后静态资源的访问路径为：根路径/res/静态资源文件名
