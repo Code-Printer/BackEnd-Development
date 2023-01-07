@@ -335,6 +335,19 @@ logging:
       file: "%d{yyyy/MM/dd-HH:mm} [%thread] %-5level %logger- %msg%n"
       console: "%d{yyyy/MM/dd-HH:mm:ss} [%thread] %-5level %logger- %msg%n"
 ```  
+## springboot的静态资源访问  
+默认springboot的静态资源放到resources/static或resources/public或resources/resources或resources/META-INF/resources目录下，就可以通过根路径+静态资源文件名被访问到。  
+请求处理的过程是：首先容器接收请求后，先看controller有没有该API，如果没有再交给静态资源处理器，寻找静态资源下的文件名，如果也找不到就返回404。  
+修改静态资源的访问路径和静态资源处理器的寻找目录：
+```yml
+#修改静态资源的访问路径，更改后静态资源的访问路径为：根路径/res/静态资源文件名
+spring: 
+ mvc: 
+  static-path-pattern: /res/**
+#修改静态资源处理器的扫描路径，更改后静态资源的扫描路径只在resources/haha目录下扫描
+ resources: 
+    static-locations: [classpath:/haha/]
+```
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
