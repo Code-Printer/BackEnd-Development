@@ -340,14 +340,39 @@ logging:
 请求处理的过程是：首先容器接收请求后，先看动态资源controller有没有该API，如果没有再交给静态资源处理器，寻找静态资源下的文件名，如果也找不到就返回404。  
 修改静态资源的访问路径和静态资源处理器的寻找目录：
 ```yml
-#修改静态资源的访问路径，更改后静态资源的访问路径为：根路径/res/静态资源文件名
+#配置静态资源的访问路径前缀，更改后静态资源的访问路径为：根路径/res/静态资源文件名
 spring: 
  mvc: 
   static-path-pattern: /res/**
-#修改静态资源处理器的扫描路径，更改后静态资源的扫描路径只在resources/haha目录下扫描
+#配置静态资源处理器的扫描路径，更改后静态资源的扫描路径只在resources/haha目录下扫描
  resources: 
     static-locations: [classpath:/haha/]
+```  
+### springboot项目首页欢迎页  
+1、在静态资源目录下放欢迎页文件index.html文件，访问项目根路径就会自动访问该欢迎页文件；  
+2、需注意此时项目不能配置静态资源的访问前缀路径，否则该欢迎页将访问不到。  
+### springboot项目的favicon
+1、将项目的favicon.ico文件放到静态资源目录下，默认访问项目的所有接口都会加载这个favicon文件到浏览栏。  
+2、需注意此时项目不能配置静态资源的访问前缀路径，否则该欢迎页将访问不到。  
+## Springboot的请求参数处理  
+rest风格：使用http请求方式的动词来表示对资源的操作(get、delete、post、put请求方式)   
+### springboot使用rest风格支持的步骤：
+1、在前端的请求表单中提交method=post和_method=put
+2、springboot在配置文件中手动开启springMvc自带的过滤器HiddenHttpMethodFilter的http请求过滤器功能。   
+```properties
+spring: 
+ mvc: 
+  hiddenmethod: 
+   filter: 
+    enabled: true
 ```
+### springboot的rest风格支持原理：
+1、前端提交表单请求，被HiddenHttpMethodFilter过滤器拦截；
+2、过滤器校验请求的method是不是get或者post；
+3、是，则获取_method的值；
+4、重新封装request，包装成requestWarpper，重写getMethod方法，返回_method的值；
+5、过滤器放行后的request实际上是包装后的requestWarpper，以后的getMethod都是_method的值。  
+需要注意：使用客户端工具类如postman工具，不需要开启springboot的Filter
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
