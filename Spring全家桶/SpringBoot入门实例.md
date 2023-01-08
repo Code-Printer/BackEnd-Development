@@ -364,7 +364,7 @@ spring:
  mvc: 
   hiddenmethod: 
    filter: 
-    enabled: true
+    enabled: true  #开启页面表单的rest功能
 ```
 ### springboot的rest风格支持原理：
 1、前端提交表单请求，被HiddenHttpMethodFilter过滤器拦截；
@@ -372,7 +372,7 @@ spring:
 3、是，则获取_method的值；
 4、重新封装request，包装成requestWarpper，重写getMethod方法，返回_method的值；
 5、过滤器放行后的request实际上是包装后的requestWarpper，以后的getMethod都是_method的值。  
-需要注意：使用客户端工具类如postman工具，不需要开启springboot的Filter
+需要注意：使用客户端工具类如postman工具，不需要开启springboot的Filter，只有页面提交表单时，需要使用rest风格才需要开启
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
