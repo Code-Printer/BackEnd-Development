@@ -376,7 +376,14 @@ spring:
 ### SpringBoot的请求映射原理  
 1、首先每个请求进来，都由DispatcherServlet中的doDispatch方法处理；  
 2、在该方法中首先根据当前请求的路径查询对应的HandlerMapping(一般自定义的rest API和处理方法拦截器保存在RequestMappingHandlerMapping中)；  
-3、自定义的API请求在RequestMappingHandlerMapping找到对应的请求路径所对应的拦截器处理方法，做逻辑处理。
+3、自定义的API请求在RequestMappingHandlerMapping找到对应的请求路径所对应的拦截器处理方法，做逻辑处理。  
+### 请求参数注解  
+1、@PathVariable：获取请求路径中的参数对应的值；  
+2、@RequestHeader：获取请求头中对应的值；  
+3、@RequestParam：获取请求参数的值；  
+4、@RequestBody：获取请求体中的参数值；
+5、@RequestAttribute：在页面转发时，后一个页面获取前一个页面的request的域属性(对应attribute)的值；
+6、@MatrixVariable：获取路径中的矩阵变量对应的值
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
