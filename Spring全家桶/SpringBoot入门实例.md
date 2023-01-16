@@ -376,7 +376,7 @@ spring:
 ### SpringBoot的请求映射过程原理  
 1、首先每个请求进来，都由DispatcherServlet中的doDispatch方法处理；  
 2、在该方法中首先根据当前请求的路径查询对应的HandlerMapping(一般自定义的rest API和处理方法拦截器保存在RequestMappingHandlerMapping中)；  
-3、自定义的API请求在RequestMappingHandlerMapping， 再从中找到对应的适配器HandlerAdapter，适配器执行目标方法并确定请求参数的值(确定对应参数的参数解析器，解析注解的参数并使用webDataBinder赋值(其中使用Converter转换请求参数的值为指定参数类型)。  
+3、自定义的API请求在RequestMappingHandlerMapping， 再从中找到对应的适配器HandlerAdapter，适配器执行目标方法并找到参数解析器，确定请求参数的值(确定对应参数的参数解析器，解析注解的参数并使用webDataBinder赋值(其中使用Converter转换请求参数的值为指定参数类型)）。  
 ### 请求参数注解  
 1、@PathVariable：获取请求路径中的参数对应的值；  
 2、@RequestHeader：获取请求头中对应的值；  
