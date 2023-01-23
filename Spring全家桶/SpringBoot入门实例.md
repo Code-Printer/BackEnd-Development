@@ -385,13 +385,51 @@ spring:
 5、@RequestAttribute：在页面转发时，后一个页面获取前一个页面的request的域属性(对应attribute)的值；
 6、@MatrixVariable：获取路径中的矩阵变量对应的值；  
 ### SpringBoot的响应原理  
-1、根据  ，找到对应处理器  
-2、找到响应解析器  
+1、注解@ResponseBody的注解，根据注解找寻RequestResponseBodyMethodProcessor处理器；  
+2、根据响应类型找到响应转换器MessageConvert(内容协商)  
 3、遍历转换器集合，根据  找到转换器  
 4、转换响应数据格式  
 ### 内容协商  
 根据不同的客户端，返回相同数据的不同格式内容  
+1、根据请求头中的accept字段的值，找到转换器
+2、搜集服务器自身能产生的转换器
+3、在两个集合中找寻交集的转换器
+4、将响应数据转换成对应的格式转填到响应消息中。  
+## 模板引擎Thymeleaf  
+springboot默认不支持jsp，jsp不能在jar包下运行。所以springboot项目要做前后端不分离需要引入第三方模板引擎(视图解析器：前端页面展示)。  
+### Thymeleaf的语法(页面动态获取值)  
+1、变量取值(获取请求域、对象和session域的值) ${...}
+2、选择变量(获取上下文对象值)  *{...}
+3、消息(获取国际化等值)   #{...}  
+4、链接(生成链接)   @{...}  
+5、片段表达式(类似于jsp.include作用)    ~{...}  
+### thymeleaf的使用  
+1、首先在pom文件中引入thymeleaf场景器依赖  
+2、查看thymeleafAutoConfig的默认前缀是"classpath:templates"，后缀是".html"；  
+3、创建html文件，放在templates文件夹下；  
+4、在页面中使用thymeleaf表达式动态获取接口中的参数值；  
+```java
+controller层  
+@RequestMapping("/hello1")
+    public String handle01(Model model){
+        log.info("coming in>>>>>>");
+        model.addAttribute("msg","test success");
+        return "test";
+    }
 
+页面html获取请求域中的msg值   
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1 th th:text="${msg}" >test</h1>
+
+</body>
+</html>
+```
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
