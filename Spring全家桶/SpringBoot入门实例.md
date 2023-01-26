@@ -401,7 +401,7 @@ springboot默认不支持jsp，jsp不能在jar包下运行。所以springboot项
 1、变量取值(获取请求域、对象和session域的值) ${...}
 2、选择变量(获取上下文对象值)  *{...}
 3、消息(获取国际化等值)   #{...}  
-4、链接(生成链接)   @{...}  
+4、链接(生成请求链接)   @{...}  
 5、片段表达式(类似于jsp.include作用)    ~{...}  
 ### thymeleaf的使用  
 1、首先在pom文件中引入thymeleaf场景器依赖  
@@ -430,6 +430,8 @@ controller层
 </body>
 </html>
 ```
+### SpringBoot结合Thymeleaf模板引擎开发后台管理系统  
+
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
