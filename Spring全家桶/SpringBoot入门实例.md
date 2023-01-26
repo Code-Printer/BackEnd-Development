@@ -430,8 +430,6 @@ controller层
 </body>
 </html>
 ```
-### SpringBoot结合Thymeleaf模板引擎开发后台管理系统  
-
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
@@ -465,7 +463,6 @@ public class WebConfigurer implements WebMvcConfigurer{
     }
 }
 ```  
-
 ## SpringBoot注解  
 @SpringBootApplication，这个注解放在程序的入口启动类上，spring容器会自动初始化一些配置信息，扫描bean，初始化bean。  
 @RestController是基于Restful风格的spring控制类，与@Controller不同的是，@RestController只能返回数据，例如常用的json数据，而@Controller不仅可以返回数据，还可以返回视图，比如我们的jsp页面。  
