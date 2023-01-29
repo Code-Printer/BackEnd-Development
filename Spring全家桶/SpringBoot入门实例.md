@@ -471,6 +471,16 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
     }
 ```
+### 拦截器的原理   
+1、根据请求，找到HandlerExecutionChain(里面包含可以处理请求的处理器和所有定义的拦截器)；  
+2、首先按集合的顺序执行每个定义的拦截器的preHandler方法：
+ - 1.当preHandler方法返回为true，继续执行下一个拦截器的preHandler；
+ - 2。如果当前拦截器的preHandler返回false，就倒序执行已经执行的拦截器的afterCompletion方法；
+3、只有当所有的拦截器的preHandler方法都返回true，才会执行目标方法，如果有任一一个拦截器的preHandler方法返回false，就直接返回不执行目标方法；
+4、当执行完目标方法后，再倒序执行所有拦截器的postHandler方法；
+5、以上所有操作只要出现异常都会直接倒序执行已经执行的拦截器的afterCompletion方法；
+6、当所有的目标方法执行完毕，渲染页面完成时，也会执行倒序执行已经执行的拦截器的afterCompletion方法。
+
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
