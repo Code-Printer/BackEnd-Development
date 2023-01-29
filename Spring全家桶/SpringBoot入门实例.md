@@ -439,39 +439,38 @@ controller层
 //自定义拦截器
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    @Override    
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {        
         HttpSession session = request.getSession();
         if (session.getAttribute("user") != null){
-            return true;
-        }
-        request.setAttribute("msg","请先登录");
-        request.getRequestDispatcher("/").forward(request,response); //获取/servlet请求，转发页面
-        return false;
+                                return true;        
+        }        
+        request.setAttribute("msg","请先登录");        
+        request.getRequestDispatcher("/").forward(request,response); //获取/servlet请求，转发页面        
+        return false;    
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         log.info("postHandle请求执行:{}",request.getRequestURI());
-    }
+    }    
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         log.info("afterCompletion请求执行:{}",request.getRequestURI());
     }
-}
-
-//自定义配置类，添加拦截器到容器中
-@Configuration
-public class MyConfig implements WebMvcConfigurer {
-    @Override
+    }
+    
+    //自定义配置类，添加拦截器到容器中
+   @Configuration 
+   public class MyConfig implements WebMvcConfigurer {    
+        @Override    
     public void addInterceptors(InterceptorRegistry registry) {
         //配置拦截器路径与放行路径
         registry.addInterceptor(new LoginInterceptor()).addPathPatterns("/**").excludePathPatterns("/","/login","/css/*","/font/*","/images/*","/js/*");
+        }
     }
-}
 ```
-test
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
