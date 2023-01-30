@@ -538,7 +538,59 @@ public class LoginInterceptor implements HandlerInterceptor {
 2、在自定义的web组件类上注解@webServlet、@webFilter、@webListener注入容器中  
 示例：
 ```java
+//启动类
+@SpringBootApplication
+@ServletComponentScan
+public class AdmintestApplication {
 
+    public static void main(String[] args) {
+        SpringApplication.run(AdmintestApplication.class, args);
+    }
+
+}
+//自定义filter
+@Slf4j
+@WebFilter(urlPatterns = "/my01")
+public class MyFilter implements Filter {
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        log.info("开始工作");
+    }
+}
+
+//自定义Servlet  
+@WebServlet(urlPatterns = "/my")
+public class MyServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.getWriter().write("666");
+    }
+}
+//自定义Listener
+@Slf4j
+@WebListener
+public class MyListener implements ServletContextListener {
+    //ServletContextListener 项目整体的监听器
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+        log.info("项目初始化完成");
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+        log.info("项目已销毁");
+    }
+}
 ```
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
