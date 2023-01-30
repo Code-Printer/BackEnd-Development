@@ -480,6 +480,50 @@ public class LoginInterceptor implements HandlerInterceptor {
 4、当执行完目标方法后，再倒序执行所有拦截器的postHandler方法；
 5、以上所有操作只要出现异常都会直接倒序执行已经执行的拦截器的afterCompletion方法；
 6、当所有的目标方法执行完毕，渲染页面完成时，也会执行倒序执行已经执行的拦截器的afterCompletion方法。
+## 文件上传  
+前端使用form表单上传文件，后端目标方法使用@RequestPart("form表单的标签名")MultipartFile对象接收  
+```java
+//html页面  
+<form role="form" method="post" th:action="@{/uploda}" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="exampleInputEmail1">Email address</label>
+        <input type="email" name="email" class="form-control" id="exampleInputEmail1" placeholder="Enter email">
+    </div>
+    <div class="form-group">
+        <label for="exampleInputPassword1">userName</label>
+        <input type="password" name="userName" class="form-control" id="exampleInputPassword1" placeholder="Password">
+    </div>
+    <div class="form-group">
+        <label for="headerImage">File input</label>
+         <input type="file" id="headerImage" name="headerImage">
+    </div>
+    <div class="form-group">
+        <label for="file">File input</label>
+        <input type="file" id="file" name="fiel" multiple>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+//controller
+@PostMapping(value = "/uploda")
+    public String uploda(@RequestParam("userName") String userName,
+                         @RequestParam("email") String email,
+                         @RequestPart("fiel")MultipartFile[] file,
+                         @RequestPart("headerImage")MultipartFile headerImage) throws IOException {
+        log.info("userName = {} ,email = {}",userName,email);
+        if (file.length > 0){
+            for (MultipartFile file1 : file){
+                String fileName = file1.getOriginalFilename();
+                file1.transferTo(new File("D:\\下载目录\\" + fileName));
+            }
+        }
+        if (headerImage.getSize() > 0){
+            String fileName = headerImage.getOriginalFilename();
+            headerImage.transferTo(new File("D:\\下载目录\\" + fileName));
+        }
+
+        return "main";
+    }
+```
 
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
