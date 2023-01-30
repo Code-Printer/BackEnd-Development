@@ -479,7 +479,8 @@ public class LoginInterceptor implements HandlerInterceptor {
 3、只有当所有的拦截器的preHandler方法都返回true，才会执行目标方法，如果有任一一个拦截器的preHandler方法返回false，就直接返回不执行目标方法；
 4、当执行完目标方法后，再倒序执行所有拦截器的postHandler方法；
 5、以上所有操作只要出现异常都会直接倒序执行已经执行的拦截器的afterCompletion方法；
-6、当所有的目标方法执行完毕，渲染页面完成时，也会执行倒序执行已经执行的拦截器的afterCompletion方法。
+6、当所有的目标方法执行完毕，渲染页面完成时，也会执行倒序执行已经执行的拦截器的afterCompletion方法。  
+![](https://mrggz.oss-cn-hangzhou.aliyuncs.com/img/20230129230002.png?x-oss-process=style/null)
 ## 文件上传  
 前端使用form表单上传文件，后端目标方法使用@RequestPart("form表单的标签名")MultipartFile对象接收  
 ```java
