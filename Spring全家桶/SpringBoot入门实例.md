@@ -145,7 +145,7 @@ public class Person {
 ```  
 3、使用   
 ```java
-@EnableConfigurationProperties(Person.class) //开启person类的配置绑定功能并将该Person类组件导入容器中(这个比上一个的好处是当导入的是第三方类，但该类没有注入到容器中，又想将配置文件的值注入到第三方类属性中)
+@EnableConfigurationProperties(Person.class) //开启person类的配置绑定功能并将该Person类组件导入容器中(这个比上一个方法导入容器的好处是当导入的是第三方类(是不能改变第三方类代码的)，但该类没有注入到容器中，又想将配置文件的值注入到第三方类属性中)
 @Configuration
 public class myconfig {
     @Autowired
@@ -526,7 +526,20 @@ public class LoginInterceptor implements HandlerInterceptor {
     }
 ```
 ### 文件上传原理  
+1、在MutipartAutoConfiguration配置类中，自动配置好了文件解析器；
+2、当表单请求到后端时，首先使用文件解析器判断请求是否是文件上传请求，是，则封装成文件上传请求MutipartHttpServletRequest；
+3、针对目标方法参数注解，找寻对应参数解析器，将请求内容封装到指定对象  
+## Springboot的错误处理  
+1、默认的错误处理是springboot会提供/error处理所有的错误映射(对于客户端会返回json错误数据(http的状态和错误信息)，对于浏览器端会返回HTML的错误数据)  
+2、自定义错误页(可以将自定义的错误页(404.html或5xx.html错误页放在template/error文件夹下，当后端处理请求有错误时，会自动解析新的错误页返回))  
+## 给Springboot项目中注入web的三大原生组件(Servlet、Listener、Filter)  
+步骤：
+1、给项目启动类上注解ServletComponentScan(basePackages=“”)注解，表明要扫描的Servlet组件路径  
+2、在自定义的web组件类上注解@webServlet、@webFilter、@webListener注入容器中  
+示例：
+```java
 
+```
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
