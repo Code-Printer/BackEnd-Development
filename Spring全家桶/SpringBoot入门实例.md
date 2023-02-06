@@ -600,11 +600,14 @@ public class MyListener implements ServletContextListener {
 ## Springboot的定制化原理  
 两种常用方法：
 1、修改配置文件中的参数值(因为配置类都是与配置文件的参数值绑定的)；
-2、自己定义Configuration实现WebMvcConfigurer接口，实现其中的方法，自定义定制化，也可以在自定义的配置类中使用@bean定义扩展新的功能。  
+2、自己定义Configuration实现WebMvcConfigurer接口，实现其中的方法，自定义定制化，也可以在自定义的配置类中使用@bean定义扩展新的功能。   
 ## Springboot的数据访问  
 ### SQL  
-1、导入JDBC场景依赖器和数据库连接驱动
+1、导入JDBC场景依赖器和数据源的驱动(connector)
 2、修改配置文件，补充数据库连接驱动(是mysql还是orcal或者其他的)、地址、用户名和密码
+### Springboot修改JDBC的HikariDataSource数据源，引入Druid数据源
+1、在pom文件中引入druid-starter场景启动器依赖  
+2、在配置文件中配置spring.datasource.druid下的参数(配置监控页、配置监控web、sql监控和防火墙监控(展示操作次数及时间性能))
 ### NoSQL  
 
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
