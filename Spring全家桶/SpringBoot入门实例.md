@@ -600,7 +600,13 @@ public class MyListener implements ServletContextListener {
 ## Springboot的定制化原理  
 两种常用方法：
 1、修改配置文件中的参数值(因为配置类都是与配置文件的参数值绑定的)；
-2、自己定义Configuration实现WebMvcConfigurer接口，实现其中的方法，自定义定制化，也可以在自定义的配置类中使用@bean定义扩展新的功能。
+2、自己定义Configuration实现WebMvcConfigurer接口，实现其中的方法，自定义定制化，也可以在自定义的配置类中使用@bean定义扩展新的功能。  
+## Springboot的数据访问  
+### SQL  
+1、导入JDBC场景依赖器和数据库连接驱动
+2、修改配置文件，补充数据库连接驱动(是mysql还是orcal或者其他的)、地址、用户名和密码
+### NoSQL  
+
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
 前后端分离开发：前后端是完全解耦的，后端将功能写成rest API形式，前端可以使用自己的框架，只需要调用后端api，进行数据回显就行了。  
