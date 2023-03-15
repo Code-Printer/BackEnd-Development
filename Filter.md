@@ -95,3 +95,6 @@ public class LoginServlet implements Filter {
 <url-pattern>*.jsp</url-pattern>
 ```  
 注意：Filter过滤器只关心请求的地址是否符合拦截路径，不会关心请求的资源是否存在。
+## Filter与Interceptor的区别  
+Filter是Servlet定义的原生组件，脱离spring框架仍然可以使用
+Inteceptor是spring定义的接口，可以使用spring的自动装配功能
