@@ -609,6 +609,11 @@ public class MyListener implements ServletContextListener {
 1、在pom文件中引入druid-starter场景启动器依赖  
 2、在配置文件中配置spring.datasource.druid下的参数(配置监控页、配置监控web、sql监控和防火墙监控(展示操作次数及时间性能))
 ### NoSQL  
+## Springboot集成mybatis步骤
+1、在pom文件引入mybatis的starter场景启动器  
+2、配置mybatis的mapper扫描路径，并开启驼峰命名
+3、创建mapper接口（注意标注@mapper注解），定义操作数据库的方法
+4、定义mapper.xml（主要注意命名空间）绑定mapper接口
 
 ## Springboot框架的Web开发(Springboot项目只需要将项目打包成jar包，使用java -jar xxx运行项目。)  
 使用Springboot框架开发web项目有别与传统的web项目(不使用Springboot框架开发的)开发，使用Springboot框架开发的web项目是没有WEB-INF目录，且静态页面是不放在WEB-INF同目录下的，Springboot框架开发的web项目的静态资源是放在resource目录下的static目录下，动态资源或模板是放在template目录下的。  
