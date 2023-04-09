@@ -56,7 +56,7 @@ Binding：exchange 和 queue 之间的虚拟连接，binding 中可以包含 rou
 ### Rabbitmq的交换器
 #### 交换器类型  
 RabbitMQ交换器类型：direct、fanout、topic、headers；
-direct交换器：全匹配路由键，只有当routing key与binding key的值完全相等才会发送消息到binging key的指定队列；
+direct交换器：全匹配路由键，只有当消息的routing key与交换器与队列的binding key值完全相等才会发送消息到binging key的指定队列；
 fanout器：广播交换器，交换器会将消息发送到所有绑定了交换器上的队列；
 topic交换器：模糊匹配交换器，会使用#或*进行routing key与bing key做模糊匹配，发送消息到指定的消息队列；
 header交换器：使用消息的header与消息队列做匹配发送；  
