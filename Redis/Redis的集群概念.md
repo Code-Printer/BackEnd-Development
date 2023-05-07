@@ -27,5 +27,15 @@
 1、最后的参数 --cluster-replicas n 表示一个master对应n个slave。
 2、master与slave的匹配顺序为第一个master与前n个slave分为一组，形成主从结构。
 (2):其他指令  
-![result](https://static01.imgkr.com/temp/86e87e9a3ec14c7894510dd06f2bb72d.png)
+![result](https://static01.imgkr.com/temp/86e87e9a3ec14c7894510dd06f2bb72d.png)  
+### Redis的哨兵模式和Redis Cluster集群的区别  
+Redis的哨兵模式：
+1、提供恢复功能，即当master出现宕机，会立即从slave中选出一个master。  
+2、提供负载均衡，master提供客户端的写操作，其余slave提供读操作    
+缺点：无法扩容，受限于单台服务器的性能
+Redis的cluster集群：  
+1、解决了Redis哨兵模式无法扩容的问题，会部署多个redis哨兵模式节点。  
+2、会根据数据key值写入对应的节点，读写都是按值去对应节点读写的（各个节点的数据都是服务的一部分）  
+缺点：每个节点的slave都是冷备，即不提供读能力，只有在成为master才有读写能力；  
+
 
