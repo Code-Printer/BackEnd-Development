@@ -289,6 +289,16 @@ rdbcompression yes  //是否压缩rdb文件，开启需要消耗cpu资源
 rdbchecksum yes  //保存rdb文件时，是否进行文件错误校验  
 APPEND(追加) ONLY MODE //aof模式，默认不开启，使用rdb持久化方式
 ```
+## Jedis的五大数据格式的常用方法  
+```
+redis字符串增删改查操作方法：jedis.set、jedis.del、jedis.set、jedis.get
+redis的list数据格式元素的增删改查方法：jedis.lpush、jedis.lpop、jedis.lset、jedis.lrange
+redis的set数据格式元素的增删改查方法：jedis.sadd、jedis.srem、jedis.smembers
+redis的zset数据格式元素的增删改查方法：jedis.zadd、jedis.zrem、jedis.zrange
+redis的hash数据格式元素的增删改查方法：增jedis.hmset、获取jedis.hmget
+redis设置每个的存活时间：jedis.setex(键、时间、值)
+redis获取事务：jedis.multi()
+```
 ## Redis可视化工具  
 1、安装软件  
 ![result](https://static01.imgkr.com/temp/1d9a511ef2c84f5b96a0706c1ddeaded.png)  
