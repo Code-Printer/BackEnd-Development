@@ -14,6 +14,8 @@ CacheManager所拥有。
 ## 关于Cache的注解  
 Cache 缓存接口，定义缓存操作。实现有：RedisCache、EhCacheCache、ConcurrentMapCache等
 @Cacheable 主要针对方法配置，能够根据方法的请求参数对其结果进行缓存（当缓存中没有该缓存需要的值，会执行方法，结果放在缓存中，当缓存中有该key的结果，就不会执行该方法）
-@CacheEvict 根据key清空缓存
+@CacheEvict 根据key清空缓存，默认是方法执行后执行该注解
 @CachePut 保证方法被调用，又希望结果被缓存。（不管缓存中是否有key的结果都会执行方法，在注解的方法执行后，执行cachePut方法）
 @EnableCaching 开启基于注解的缓存
+@Caching：组合注解，该注解中可以同时设置@Cacheable、@CacheEvict和@CachePut  
+@CacheConfig：公共配置注解，例如该注解可以设置当前类所有方法公用的Cache名
