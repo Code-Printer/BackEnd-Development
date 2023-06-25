@@ -32,7 +32,7 @@ springboot表示该类为组件的五大注解：@bean、@Component、@Controlle
 ### SpringBoot开启事务(事务(ACID)：要么都执行，要么都不执行)  
 1、在主类(Main)使用注解@EnableTransactionManagement开启事务  
 2、在访问数据库的service方法上添加注解@Transactional即可  
-   
+
 ### @RequestParam与@RequestBody的区别  
 @RequestParam后台接收的参数在请求头中，就是请求路径url中，只能用来接收get请求。    
 @RequestBody后台接收的参数在请求体中，只能用来接收post请求。  
